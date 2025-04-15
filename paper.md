@@ -2,8 +2,8 @@ Multidimensional neural networks part 1
 
 Mohamed Ibrahim 
 
-
-Abstract 
+ 
+# Abstract 
 
 Can we build a large language model and train it from scratch on a personal computer? Maybe! 
 
