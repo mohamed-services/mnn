@@ -103,12 +103,19 @@ Also we can implement reasoning and thinking by giving the model various time st
 # Implementation 
 
 https://github.com/mohamed-services/nn/blob/main/layer.py 
+
 you are not bounded by this implementation, you can implement the multidimensional layer however you want based on your requirements, and decide what parameters to be shared and what to stay separate, 
+
 you can use multiple multidimensional layers in parallel like multi heads 
+
 you can stack multiple multidimensional layers for a deeper network 
+
 you can feed the outputs of the multidimensional layer to itself multiple times before passing the outputs to the next layer 
+
 this implementation is in TensorFlow, but you can convert it to PyTorch very easily 
+
 In this implementation every node is connected to itself multiple times which is inefficient in the parallel mode 
+
 I haven’t tested this code enough so it might be buggy 
 
  
