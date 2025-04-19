@@ -134,3 +134,4 @@ Unterthiner, Jessica Yung, Andreas Steiner, Daniel Keysers, Jakob Uszkoreit, Mar
 Alexey Dosovitskiy. MLP-Mixer: An all-MLP Architecture for Vision https://arxiv.org/abs/2105.01601 
  
  
+
