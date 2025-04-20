@@ -1,4 +1,5 @@
-Multidimensional neural networks part 1 
+**Multidimensional neural networks part 1** 
+ 
 Mohamed Ibrahim 
  
 # Abstract 
