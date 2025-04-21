@@ -95,6 +95,8 @@ this implementation is in TensorFlow, but you can convert it to PyTorch very eas
 In this implementation every node is connected to itself multiple times which is inefficient in the parallel mode
 I haven’t tested this code enough so it might be buggy
   
+## contributors
+  
 ## In the end
 
 This is not a finished work as it is still in progress, I have not started the training process yet, as I have some issues in the architecture that I need to work on first before starting the training,
