@@ -88,7 +88,7 @@ I haven’t tested this code enough so it might be buggy
   
 ## Additional contributions from
 
-<https://github.com/tagrib>
+<https://github.com/tagrib>  
 <https://github.com/mgostIH>
   
 ## In the end
