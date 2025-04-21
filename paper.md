@@ -85,7 +85,7 @@ If you reached this part of the paper, I hope it was somewhat helpful to you. If
 If you have any freelancing task or any task that needs to be outsourced please contact me, I do data entry, data annotations, bookkeeping, chat and phone customer service, IT support, secretary, virtual assistance, admin support, programming and machine learning tasks for a minimum of two dollars per hour and a maximum of seven dollars per hour depending on the task, I do these tasks myself or delegate them to someone else to do them, you can email me on my personal email mohamed.sourcing@gmail.com 
  
 # References 
-[1]	Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin. Attention Is All You Need https://arxiv.org/abs/1706.03762 
+[1]	Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin. Attention Is All You Need https://arxiv.org/abs/1706.03762
 [2]	Ilya Tolstikhin, Neil Houlsby, Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, Thomas 
 Unterthiner, Jessica Yung, Andreas Steiner, Daniel Keysers, Jakob Uszkoreit, Mario Lucic, 
 Alexey Dosovitskiy. MLP-Mixer: An all-MLP Architecture for Vision https://arxiv.org/abs/2105.01601 
