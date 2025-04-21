@@ -14,8 +14,6 @@ Usually training such a model takes millions of dollars in resources, So reducin
 I feel that I need to introduce myself to clear the motivation and to set some expectations, programming and machine learning was a little hobby of mine but I gave up on this hobby some years ago, and I’m trying to get back to it right now because I need an AI model to be my assistant and the large companies don't provide what I exactly need, there are a lot of advancements in past few years so I'm trying to catch up with the recent advancements in the field, I just want to make it clear that I'm not a machine learning engineer nor a software engineer, I'm more of a programming and a machine learning fan,
 Also be cautious about any mathematical calculation, code snippet or any unproved claim in this paper, as maybe further verification is needed,
   
-## Multimodality
-  
 ## Multidimensionality
 
 If we are using one dimensional neural network like MLP architecture for our model then, if we have an image of size (600, 600, 3) then its flatten context window is approximately 1 million token then we need 1 trillion parameters for a single layer to process this image, also if we are dealing with a text of size 16k words and embedded every word in a vector of size 64 so its flatten context window will be approximately 1 million token then  we need 1 trillion parameters per layer to process this text, and the truth is most of those 1 trillion parameters doesn’t contribute much and we can convert 99% of those parameters to zeros without affecting the final results much, So the problem of MLP is that it scales quadratically that’s why we are not using  MLP for tasks of large size like images or text,
@@ -88,7 +86,7 @@ this implementation is in TensorFlow, but you can convert it to PyTorch very eas
 In this implementation every node is connected to itself multiple times which is inefficient in the parallel mode
 I haven’t tested this code enough so it might be buggy
   
-## contributors
+## Contributors
   
 ## In the end
 
