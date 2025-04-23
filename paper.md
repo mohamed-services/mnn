@@ -77,7 +77,7 @@ Also we can implement reasoning and thinking by giving the model various time st
   
 ## Partial training
 
-///
+\n
 
 ## blind training
 
@@ -90,7 +90,7 @@ Also we can implement reasoning and thinking by giving the model various time st
 ## identity embedding
 
 ///
-  
+
 ## Implementation
 
 <https://github.com/mohamed-services/nn/blob/main/layer.py>
