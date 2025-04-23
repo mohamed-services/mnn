@@ -77,19 +77,19 @@ Also we can implement reasoning and thinking by giving the model various time st
   
 ## Partial training
 
-</br></br>
+</br>
 
 ## blind training
 
-</br></br>
+</br>
 
 ## self distillation
 
-</br></br>
+</br>
 
 ## identity embedding
 
-</br></br>
+</br>
 
 ## Implementation
 
