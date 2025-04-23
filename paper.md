@@ -76,12 +76,20 @@ Because we are using fixed network size instead of dynamical size, we can feed t
 Also we can implement reasoning and thinking by giving the model various time steps to run by refeeding the model with its own outputs multiple times with backpropagation through time, depending on the length of the inputs and the outputs or the difficulty of the problem, so it can internally reason about the inputs before giving a final output,  
   
 ## Partial training
-  
+
+///
+
 ## blind training
-  
+
+///
+
 ## self distillation
-  
+
+///
+
 ## identity embedding
+
+///
   
 ## Implementation
 
