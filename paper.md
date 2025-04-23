@@ -79,15 +79,23 @@ Also we can implement reasoning and thinking by giving the model various time st
 
 </br>
 
-## blind training
+## Blind training
 
 </br>
 
-## self distillation
+## Self distillation
 
 </br>
 
-## identity embedding
+## Identity embedding
+
+</br>
+
+## General intelligence rate with human evaluation
+
+</br>
+
+## General intelligence rate with auto evaluation
 
 </br>
 
