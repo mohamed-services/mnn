@@ -77,7 +77,7 @@ Also we can implement reasoning and thinking by giving the model various time st
   
 ## Partial training
 
-\n
+/n
 
 ## blind training
 
