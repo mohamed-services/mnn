@@ -54,6 +54,10 @@ I’m not saying that I have the designs and architecture needed to do it, I’m
 
 The multidimensional layers give you the freedom to resize the layers shape whatever you want by using a dense layer on the specific axis you want to resize, like how the feedforward layers allows you to get different output size than the input,
   
+## Tokenization
+
+I'll use byte based tokenization for all modalities, and will encode only one byte in every segment, So text may take from one to four segments, Images will take three segments, Audio will take two segments,
+  
 ## Padding
 
 Transformer models gives flexible context window, but the feedforward models needs fixed context window so we have to pad our inputs to a fixed size so the feedforward layers can process it, you can leave the beginning of your inputs and only pad the end of the inputs, but for me all the inputs will be padded with random number of zeros before it and the inputs will be zero padded after it till the end of the model input size so the position of the input will be random not in the beginning of the context window,  
