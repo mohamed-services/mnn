@@ -63,7 +63,6 @@ class resizing_layer(keras.layers.Layer):
         return x
 
 
-# Other implementations in case the above implementation didn’t work
 class multidimensional_layer_separate(keras.layers.Layer):
     def __init__(self, shape, identity=True, use_bias=False, **kwargs):
         super().__init__()
