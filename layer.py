@@ -18,7 +18,9 @@ class MNN(keras.layers.Layer):
     def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
         super().__init__()
         self.shape = shape
-        self.execution = execution
+        self.execution = execution.lower()
+        if self.execution not in ['parallel', 'sequential']:
+            raise ValueError('execution value must be parallel or sequential')
         self.sequential_order = sequential_order.lower()
         if type(view) == str:
             view = [view.lower() for i in shape]
@@ -43,19 +45,17 @@ class MNN(keras.layers.Layer):
             order = self.w if self.sequential_order == 'ascending' else reversed(self.w)
             for axis in order:
                 x = axis_call(x, self.w[axis], axis)
-        else:
-            raise ValueError('execution value must be parallel or sequential')
         return x
 
 class resizing_layer(keras.layers.Layer):
-    def __init__(self, shape, axis: int, output_shape: int, spatial_sharing: bool, **kwargs):
+    def __init__(self, shape, axis: int, output_shape: int, sharing: bool, **kwargs):
         super().__init__()
         self.shape = shape
         self.axis = axis
         self.w = {}
-        if spatial_sharing == True:
+        if sharing == True:
             self.w[axis] = self.add_weight(shape=[shape[axis], output_shape])
-        elif spatial_sharing == False:
+        elif sharing == False:
             self.w[axis] = self.add_weight(shape=list(shape) + [output_shape])
     def call(self, x):
         x = axis_call(x, self.w[self.axis], self.axis)
