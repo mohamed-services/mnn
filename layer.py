@@ -1,8 +1,7 @@
 
-import numpy as np
 import tensorflow as tf
 import keras
-import string 
+import string
 
 def axis_call(x, w, axis):
     equation_x = string.ascii_letters[:len(x.shape)]
@@ -15,7 +14,7 @@ def axis_call(x, w, axis):
     print(equation)
     return tf.einsum(equation, x, w)
 
-class multidimensional_layer(keras.layers.Layer):
+class MNN(keras.layers.Layer):
     def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
         super().__init__()
         self.shape = shape
@@ -61,43 +60,4 @@ class resizing_layer(keras.layers.Layer):
     def call(self, x):
         x = axis_call(x, self.w[self.axis], self.axis)
         return x
-
-
-class multidimensional_layer_separate(keras.layers.Layer):
-    def __init__(self, shape, identity=True, use_bias=False, **kwargs):
-        super().__init__()
-        self.shape = shape
-        self.w = [self.add_weight(shape=shape) for i in range((sum(shape)-len(shape)))]
-        self.i = [self.add_weight(shape=shape, initializer='zeros')] if identity else None
-        self.b = [self.add_weight(shape=shape , initializer='zeros')] if use_bias else None
-    def call(self, x):
-        sub_layer = []
-        if self.i:
-            sub_layer.append(x*self.i[0])
-        index = 0
-        for axis in range(-len(self.shape),0):
-            for shift in range(1, self.shape[axis]):
-                sub_layer.append(tf.roll(x*self.w[index], shift=shift, axis=axis))
-                index += 1
-        x = tf.add_n(sub_layer)
-        if self.b:
-            x = x + self.b[0]
-        return x
-
-class multidimensional_layer_shared(keras.layers.Layer):
-    def __init__(self, shape, use_bias=False, **kwargs):
-        super().__init__()
-        self.shape = shape
-        self.perm = keras.layers.Permute(np.roll(list(range(len(shape))), 1)+1)
-        self.dense_layers = [keras.layers.Dense(units, use_bias=use_bias, **kwargs) for units in reversed(shape)]
-    def call(self, x):
-        for dense in self.dense_layers:
-            x = dense(x)
-            x = self.perm(x)
-        return x
-
-
-
-
-
 
