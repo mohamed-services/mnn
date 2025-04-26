@@ -117,9 +117,9 @@ I haven’t tested this code enough so it might be buggy
 ## Additional contributions from
 
 <https://github.com/tagrib>  
-<https://github.com/mgostIH>
-<https://github.com/bobbyiscool123>
-  
+<https://github.com/mgostIH>  
+<https://github.com/bobbyiscool123>  
+
 ## In the end
 
 This is not a finished work as it is still in progress, I have not started the training process yet, as I have some issues in the architecture that I need to work on first before starting the training,
