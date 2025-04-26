@@ -62,6 +62,24 @@ class resizing_layer(keras.layers.Layer):
         x = axis_call(x, self.w[self.axis], self.axis)
         return x
 
+
+if __name__ == '__main__':
+    import numpy as np
+    import time
+    shape = [16,16,16,16]
+    x = np.random.random([64]+shape)
+    y = np.random.random([64]+shape)
+    model = keras.Sequential([
+        keras.layers.InputLayer(shape),
+        MNN(shape, 'separate')
+    ])
+    model.compile('adam', 'mse')
+    model.summary()
+    t = time.time()
+    model.fit(x, y, epochs=16)
+    t = time.time() - t
+    print(t)
+
 # add preinitialized weights in the init
 
 
@@ -116,40 +134,6 @@ class MNN(torch.nn.Module):
             for axis in order:
                 x = axis_call(x, self.w[axis], axis)
         return x
-
-class resizing_layer(keras.layers.Layer):
-    def __init__(self, shape, axis: int, output_shape: int, sharing: bool, **kwargs):
-        super().__init__()
-        self.shape = shape
-        self.axis = axis
-        self.w = {}
-        if sharing == True:
-            self.w[axis] = self.add_weight(shape=[shape[axis], output_shape])
-        elif sharing == False:
-            self.w[axis] = self.add_weight(shape=list(shape) + [output_shape])
-    def call(self, x):
-        x = axis_call(x, self.w[self.axis], self.axis)
-        return x
-
-
-if __name__ == '__main__':
-    import numpy as np
-    import time
-    shape = [16,16,16,16]
-    x = np.random.random([64]+shape)
-    y = np.random.random([64]+shape)
-    model = keras.Sequential([
-        keras.layers.InputLayer(shape),
-        MNN(shape, 'separate', )
-    ])
-    model.compile('adam', 'mse')
-    model.summary()
-    t = time.time()
-    model.fit(x, y, epochs=16)
-    t = time.time() - t
-    print(t)
-
-    
 
 if __name__ == '__main__':
     import numpy as np
@@ -217,4 +201,119 @@ if __name__ == '__main__':
     #     test_outputs = model(x_torch)
     #     test_loss = criterion(test_outputs, y_torch)
     #     print(f"\nLoss on the full dataset after training: {test_loss.item():.4f}")
+
+
+# jax implementation
+import jax
+import jax.numpy as jnp
+import string
+from flax import linen as nn
+from typing import Union, List
+import optax
+from flax.training import train_state
+
+
+def axis_call(x, w, axis):
+    equation_x = string.ascii_letters[:x.ndim]
+    if len(w.shape) == 2:  # shared weights
+        equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
+    else:  # separate weights
+        # Calculate starting index for equation_w
+        start_idx = x.ndim - len(w.shape) + 1
+        equation_w = equation_x[start_idx:] + string.ascii_letters[len(equation_x)]
+    equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
+    equation = f"{equation_x},{equation_w}->{equation_o}"
+    return jnp.einsum(equation, x, w)
+
+
+class MNN(nn.Module):
+    shape: tuple
+    view: Union[str, List[str]]
+    execution: str = 'parallel'
+    sequential_order: str = 'ascending'
+    kernel_init: nn.initializers.Initializer = nn.initializers.lecun_normal()
+    def setup(self):
+        # Process view configuration
+        if isinstance(self.view, str):
+            processed_view = [self.view.lower() for _ in self.shape]
+        elif len(self.view) == 1:
+            processed_view = [self.view[0].lower() for _ in self.shape]
+        else:
+            processed_view = [v.lower() for v in self.view]
+        # Validate configuration
+        if self.execution not in ['parallel', 'sequential']:
+            raise ValueError("Execution must be 'parallel' or 'sequential'")
+        if self.sequential_order not in ['ascending', 'descending']:
+            raise ValueError("Sequential order must be 'ascending' or 'descending'")
+        # Create parameters as attributes
+        self.axes = list(range(-len(self.shape), 0))
+        for axis in self.axes:
+            view_type = processed_view[axis]
+            if view_type == 'shared':
+                in_shape = (self.shape[axis],)
+            elif view_type == 'separate':
+                in_shape = self.shape
+            else:
+                raise ValueError(f"Invalid view: {view_type}. Use 'shared' or 'separate'")
+            param_shape = in_shape + (self.shape[axis],)
+            setattr(self, f'w_{axis}', self.param(f'w_{axis}', self.kernel_init, param_shape))
+    def __call__(self, x):
+        # Collect parameters in order
+        params = [getattr(self, f'w_{axis}') for axis in self.axes]
+        if self.execution == 'parallel':
+            outputs = [axis_call(x, w, axis) for w, axis in zip(params, self.axes)]
+            return sum(outputs)
+        elif self.execution == 'sequential':
+            order = zip(params, self.axes)
+            if self.sequential_order == 'descending':
+                order = reversed(list(order))
+            for w, axis in order:
+                x = axis_call(x, w, axis)
+            return x
+
+
+if __name__ == '__main__':
+    import numpy as np
+    import time
+    # Example usage
+    input_shape = (16, 16, 16, 16)
+    batch_size = 64
+    # Generate random data
+    key = jax.random.PRNGKey(0)
+    x = jax.random.normal(key, (batch_size,) + input_shape)
+    y = jax.random.normal(key, (batch_size,) + input_shape)
+    # Create model
+    class Model(nn.Module):
+        @nn.compact
+        def __call__(self, x):
+            return MNN(shape=input_shape, view='separate', name='mnn')(x)
+    # Initialize model
+    model = Model()
+    params = model.init(jax.random.PRNGKey(0), x)
+    # Create optimizer and training state
+    tx = optax.adam(0.001)
+    state = train_state.TrainState.create(
+        apply_fn=model.apply,
+        params=params,
+        tx=tx
+    )
+    # Define loss function
+    def compute_loss(params, x, y):
+        pred = model.apply(params, x)
+        return jnp.mean((pred - y) ** 2)
+    # Training step
+    @jax.jit
+    def train_step(state, batch_x, batch_y):
+        grad_fn = jax.grad(lambda p: compute_loss(p, batch_x, batch_y))
+        grads = grad_fn(state.params)
+        return state.apply_gradients(grads=grads)
+    # Training loop
+    t = time.time()
+    for epoch in range(16):
+        # For simplicity, we're using full-batch training here
+        state = train_step(state, x, y)
+        loss = compute_loss(state.params, x, y)
+        print(f"Epoch {epoch+1}, Loss: {loss:.4f}")
+    t = time.time() - t
+    print(t)
 
