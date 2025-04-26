@@ -39,12 +39,12 @@ class MNN_tf(keras.layers.Layer):
         if self.execution == 'parallel':
             sub_layer = []
             for axis in self.w:
-                sub_layer.append(axis_call(x, self.w[axis], axis))
+                sub_layer.append(self.axis_call(x, self.w[axis], axis))
             x = sum(sub_layer)
         elif self.execution == 'sequential':
             order = self.w if self.sequential_order == 'ascending' else reversed(self.w)
             for axis in order:
-                x = axis_call(x, self.w[axis], axis)
+                x = self.axis_call(x, self.w[axis], axis)
         return x
 
 class resizing_layer_tf(keras.layers.Layer):
@@ -68,7 +68,7 @@ class resizing_layer_tf(keras.layers.Layer):
         print(equation)
         return tf.einsum(equation, x, w)
     def call(self, x):
-        x = axis_call(x, self.w[self.axis], self.axis)
+        x = self.axis_call(x, self.w[self.axis], self.axis)
         return x
 
 
@@ -135,12 +135,12 @@ class MNN_torch(torch.nn.Module):
         if self.execution == 'parallel':
             sub_layer = []
             for axis in self.w:
-                sub_layer.append(axis_call(x, self.w[axis], axis))
+                sub_layer.append(self.axis_call(x, self.w[axis], axis))
             x = sum(sub_layer)
         elif self.execution == 'sequential':
             order = self.w if self.sequential_order == 'ascending' else reversed(self.w)
             for axis in order:
-                x = axis_call(x, self.w[axis], axis)
+                x = self.axis_call(x, self.w[axis], axis)
         return x
 
 if __name__ == '__main__':
@@ -266,14 +266,14 @@ class MNN_jax(nn.Module):
         # Collect parameters in order
         params = [getattr(self, f'w_{axis}') for axis in self.axes]
         if self.execution == 'parallel':
-            outputs = [axis_call(x, w, axis) for w, axis in zip(params, self.axes)]
+            outputs = [self.axis_call(x, w, axis) for w, axis in zip(params, self.axes)]
             return sum(outputs)
         elif self.execution == 'sequential':
             order = zip(params, self.axes)
             if self.sequential_order == 'descending':
                 order = reversed(list(order))
             for w, axis in order:
-                x = axis_call(x, w, axis)
+                x = self.axis_call(x, w, axis)
             return x
 
 
