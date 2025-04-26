@@ -1,6 +1,38 @@
 
-This is not a finished work as it is still in progress, I have not started the training process yet, as I have some issues in the architecture that I need to work on first before starting the training,
-If you reached this part of the paper, I hope it was somewhat helpful to you. If you have any questions or recommendations on how to improve this architecture and are willing to share it or make it open source, please contact me or send a pull request, 
-If you have any freelancing task or any task that needs to be outsourced please contact me, I do data entry and data annotations, bookkeeping, email chat and phone customer service, IT support, secretary, virtual assistance, admin support, programming and machine learning tasks for a minimum of two US Dollars per hour and a maximum of seven US Dollars per hour depending on the task at hand, I do these tasks myself or delegate them to someone else to do them, you can email me on my personal email mohamed.sourcing@gmail.com
+# Multidimensional Neural Networks (MNN)
 
+[![Status](https://img.shields.io/badge/Status-In%20Development-yellow)](https://github.com/mohamed-services/nn)
+[![Python](https://img.shields.io/badge/Python-3.6%2B-blue)](https://www.python.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.0%2B-orange)](https://www.tensorflow.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-1.0%2B-red)](https://pytorch.org/)
+
+## Overview
+
+This repository contains an implementation of Multidimensional Neural Networks (MNN), a novel neural network architecture designed to process high-dimensional data more efficiently than traditional approaches. By reshaping inputs into higher dimensions and processing them along different axes, MNNs can potentially reduce computational complexity while maintaining model expressiveness.
+
+> **Note**: This project is currently in development. The training process has not yet begun as there are architectural issues that need to be addressed first.
+
+## Features
+
+- Implementation in both TensorFlow and PyTorch
+- Support for shared and separate parameters across dimensions
+- Parallel and sequential execution modes
+- Customizable network architecture
+
+## Documentation
+
+- [Installation Guide](INSTALLATION.md)
+- [Usage Examples](USAGE.md)
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [Paper](paper.md) - Detailed explanation of the MNN concept
+
+## Getting Started
+
+```python
+# Example code will be added soon
+```
+
+## Contact
+
+For questions or suggestions about improving this architecture, please open an issue or submit a pull request.
 
