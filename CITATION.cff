@@ -7,8 +7,8 @@ authors:
 title: "Multidimensional Neural Networks"
 version: 0.1.0
 date-released: 2023-04-26
-url: "https://github.com/mohamed-services/nn"
-repository-code: "https://github.com/mohamed-services/nn"
+url: "https://github.com/mohamed-services/mnn"
+repository-code: "https://github.com/mohamed-services/mnn"
 abstract: >
   This repository contains an implementation of Multidimensional Neural Networks (MNN),
   a novel neural network architecture designed to process high-dimensional data more
@@ -21,7 +21,7 @@ keywords:
   - multidimensional
   - tensorflow
   - pytorch
-license: MIT
+license: GNU GENERAL PUBLIC LICENSE
 references:
   - type: article
     authors:
