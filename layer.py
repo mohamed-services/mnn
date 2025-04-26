@@ -4,18 +4,7 @@ import tensorflow as tf
 import keras
 import string
 
-def axis_call(x, w, axis):
-    equation_x = string.ascii_letters[:len(x.shape)]
-    if len(w.shape) == 2: #shared
-        equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
-    else: #separate
-        equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
-    equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
-    equation = equation_x + ',' + equation_w + '->' + equation_o
-    print(equation)
-    return tf.einsum(equation, x, w)
-
-class MNN(keras.layers.Layer):
+class MNN_tf(keras.layers.Layer):
     def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
         super().__init__()
         self.shape = shape
@@ -36,6 +25,16 @@ class MNN(keras.layers.Layer):
             else:
                 raise ValueError('view value missing or invalid, valid view values shared or separate')
             self.w[axis] = self.add_weight(shape=in_shape+[shape[axis]], **kwargs)
+    def axis_call(self, x, w, axis):
+        equation_x = string.ascii_letters[:len(x.shape)]
+        if len(w.shape) == 2: #shared
+            equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
+        else: #separate
+            equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
+        equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
+        equation = equation_x + ',' + equation_w + '->' + equation_o
+        print(equation)
+        return tf.einsum(equation, x, w)
     def call(self, x):
         if self.execution == 'parallel':
             sub_layer = []
@@ -48,7 +47,7 @@ class MNN(keras.layers.Layer):
                 x = axis_call(x, self.w[axis], axis)
         return x
 
-class resizing_layer(keras.layers.Layer):
+class resizing_layer_tf(keras.layers.Layer):
     def __init__(self, shape, axis: int, output_shape: int, sharing: bool, **kwargs):
         super().__init__()
         self.shape = shape
@@ -58,6 +57,16 @@ class resizing_layer(keras.layers.Layer):
             self.w[axis] = self.add_weight(shape=[shape[axis], output_shape])
         elif sharing == False:
             self.w[axis] = self.add_weight(shape=list(shape) + [output_shape])
+    def axis_call(self, x, w, axis):
+        equation_x = string.ascii_letters[:len(x.shape)]
+        if len(w.shape) == 2: #shared
+            equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
+        else: #separate
+            equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
+        equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
+        equation = equation_x + ',' + equation_w + '->' + equation_o
+        print(equation)
+        return tf.einsum(equation, x, w)
     def call(self, x):
         x = axis_call(x, self.w[self.axis], self.axis)
         return x
@@ -71,7 +80,7 @@ if __name__ == '__main__':
     y = np.random.random([64]+shape)
     model = keras.Sequential([
         keras.layers.InputLayer(shape),
-        MNN(shape, 'separate')
+        MNN_tf(shape, 'separate')
     ])
     model.compile('adam', 'mse')
     model.summary()
@@ -87,18 +96,7 @@ if __name__ == '__main__':
 import torch
 import string
 
-def axis_call(x, w, axis):
-    equation_x = string.ascii_letters[:len(x.shape)]
-    if len(w.shape) == 2: #shared
-        equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
-    else: #separate
-        equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
-    equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
-    equation = equation_x + ',' + equation_w + '->' + equation_o
-    #print(equation)
-    return torch.einsum(equation, x, w)
-
-class MNN(torch.nn.Module):
+class MNN_torch(torch.nn.Module):
     def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
         super().__init__()
         self.shape = shape
@@ -123,6 +121,16 @@ class MNN(torch.nn.Module):
             param_name = f'weight_{axis}'
             self.register_parameter(param_name, param)
             self.w[axis] = param
+    def axis_call(self, x, w, axis):
+        equation_x = string.ascii_letters[:len(x.shape)]
+        if len(w.shape) == 2: #shared
+            equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
+        else: #separate
+            equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
+        equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
+        equation = equation_x + ',' + equation_w + '->' + equation_o
+        #print(equation)
+        return torch.einsum(equation, x, w)
     def forward(self, x):
         if self.execution == 'parallel':
             sub_layer = []
@@ -151,7 +159,7 @@ if __name__ == '__main__':
     # Instantiate the PyTorch MNN module
     # Using view='separate' and execution='parallel' as in the original example
     print("Instantiating MNN_torch with shape={}, view='separate', execution='parallel'".format(shape))
-    model = MNN(shape=shape, view='separate', execution='parallel')
+    model = MNN_torch(shape=shape, view='separate', execution='parallel')
     # Define Loss Function and Optimizer
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -212,21 +220,7 @@ from typing import Union, List
 import optax
 from flax.training import train_state
 
-
-def axis_call(x, w, axis):
-    equation_x = string.ascii_letters[:x.ndim]
-    if len(w.shape) == 2:  # shared weights
-        equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
-    else:  # separate weights
-        # Calculate starting index for equation_w
-        start_idx = x.ndim - len(w.shape) + 1
-        equation_w = equation_x[start_idx:] + string.ascii_letters[len(equation_x)]
-    equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
-    equation = f"{equation_x},{equation_w}->{equation_o}"
-    return jnp.einsum(equation, x, w)
-
-
-class MNN(nn.Module):
+class MNN_jax(nn.Module):
     shape: tuple
     view: Union[str, List[str]]
     execution: str = 'parallel'
@@ -257,6 +251,17 @@ class MNN(nn.Module):
                 raise ValueError(f"Invalid view: {view_type}. Use 'shared' or 'separate'")
             param_shape = in_shape + (self.shape[axis],)
             setattr(self, f'w_{axis}', self.param(f'w_{axis}', self.kernel_init, param_shape))
+    def axis_call(self, x, w, axis):
+        equation_x = string.ascii_letters[:x.ndim]
+        if len(w.shape) == 2:  # shared weights
+            equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
+        else:  # separate weights
+            # Calculate starting index for equation_w
+            start_idx = x.ndim - len(w.shape) + 1
+            equation_w = equation_x[start_idx:] + string.ascii_letters[len(equation_x)]
+        equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
+        equation = f"{equation_x},{equation_w}->{equation_o}"
+        return jnp.einsum(equation, x, w)
     def __call__(self, x):
         # Collect parameters in order
         params = [getattr(self, f'w_{axis}') for axis in self.axes]
@@ -286,7 +291,7 @@ if __name__ == '__main__':
     class Model(nn.Module):
         @nn.compact
         def __call__(self, x):
-            return MNN(shape=input_shape, view='separate', name='mnn')(x)
+            return MNN_jax(shape=input_shape, view='separate', name='mnn')(x)
     # Initialize model
     model = Model()
     params = model.init(jax.random.PRNGKey(0), x)
