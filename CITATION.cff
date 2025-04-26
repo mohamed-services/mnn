@@ -1,0 +1,75 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Ibrahim"
+    given-names: "Mohamed"
+    email: "mohamed.sourcing@gmail.com"
+title: "Multidimensional Neural Networks"
+version: 0.1.0
+date-released: 2023-04-26
+url: "https://github.com/mohamed-services/nn"
+repository-code: "https://github.com/mohamed-services/nn"
+abstract: >
+  This repository contains an implementation of Multidimensional Neural Networks (MNN),
+  a novel neural network architecture designed to process high-dimensional data more
+  efficiently than traditional approaches. By reshaping inputs into higher dimensions
+  and processing them along different axes, MNNs can potentially reduce computational
+  complexity while maintaining model expressiveness.
+keywords:
+  - neural-networks
+  - deep-learning
+  - multidimensional
+  - tensorflow
+  - pytorch
+license: MIT
+references:
+  - type: article
+    authors:
+      - family-names: "Vaswani"
+        given-names: "Ashish"
+      - family-names: "Shazeer"
+        given-names: "Noam"
+      - family-names: "Parmar"
+        given-names: "Niki"
+      - family-names: "Uszkoreit"
+        given-names: "Jakob"
+      - family-names: "Jones"
+        given-names: "Llion"
+      - family-names: "Gomez"
+        given-names: "Aidan N."
+      - family-names: "Kaiser"
+        given-names: "Lukasz"
+      - family-names: "Polosukhin"
+        given-names: "Illia"
+    title: "Attention Is All You Need"
+    year: 2017
+    url: "https://arxiv.org/abs/1706.03762"
+  - type: article
+    authors:
+      - family-names: "Tolstikhin"
+        given-names: "Ilya"
+      - family-names: "Houlsby"
+        given-names: "Neil"
+      - family-names: "Kolesnikov"
+        given-names: "Alexander"
+      - family-names: "Beyer"
+        given-names: "Lucas"
+      - family-names: "Zhai"
+        given-names: "Xiaohua"
+      - family-names: "Unterthiner"
+        given-names: "Thomas"
+      - family-names: "Yung"
+        given-names: "Jessica"
+      - family-names: "Steiner"
+        given-names: "Andreas"
+      - family-names: "Keysers"
+        given-names: "Daniel"
+      - family-names: "Uszkoreit"
+        given-names: "Jakob"
+      - family-names: "Lucic"
+        given-names: "Mario"
+      - family-names: "Dosovitskiy"
+        given-names: "Alexey"
+    title: "MLP-Mixer: An all-MLP Architecture for Vision"
+    year: 2021
+    url: "https://arxiv.org/abs/2105.01601"
