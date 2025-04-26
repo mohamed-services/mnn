@@ -24,11 +24,14 @@ There are many ways to contribute to this project:
 
 1. Fork the repository on GitHub
 2. Clone your fork locally:
+
    ```bash
    git clone https://github.com/mohamed-services/nn.git
    cd nn
    ```
+
 3. Create a new branch for your changes:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
