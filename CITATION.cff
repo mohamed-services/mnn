@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-  - family-names: "Ibrahim"
-    given-names: "Mohamed"
+  - given-names: "Mohamed"
+    family-names: "Ibrahim"
     email: "mohamed.sourcing@gmail.com"
 title: "Multidimensional Neural Networks"
 version: 0.1.0
-date-released: 2023-04-26
+date-released: 2025-01-01
 url: "https://github.com/mohamed-services/mnn"
 repository-code: "https://github.com/mohamed-services/mnn"
 abstract: >
@@ -21,7 +21,7 @@ keywords:
   - multidimensional
   - tensorflow
   - pytorch
-license: GNU GENERAL PUBLIC LICENSE
+license: GPL-3.0
 references:
   - type: article
     authors:
