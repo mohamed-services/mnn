@@ -5,9 +5,9 @@ import keras
 import string
 
 class MNN_tf(keras.layers.Layer):
-    def __init__(self, shape, mode='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None = None, axis_output :int|None = None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, weights=None, **kwargs):
+    def __init__(self, shape, mode :str|list[str]='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None=None, axis_output :int|None=None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, weights=None, **kwargs):
         super().__init__(**kwargs)
-        self.shape = shape
+        self.shape = shape # shape of the input, must be a list of integers, doesn't include the batch size
         self.execution = execution.lower()
         if self.execution not in ['parallel', 'sequential', 'single']:
             raise ValueError('execution value must be parallel or sequential or single')
