@@ -5,12 +5,15 @@ import keras
 import string
 
 class MNN_tf(keras.layers.Layer):
-    def __init__(self, shape, mode='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None = None, axis_output :int|None = None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, **kwargs):
+    def __init__(self, shape, mode='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None = None, axis_output :int|None = None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, weights=None, **kwargs):
         super().__init__(**kwargs)
         self.shape = shape
         self.execution = execution.lower()
         if self.execution not in ['parallel', 'sequential', 'single']:
             raise ValueError('execution value must be parallel or sequential or single')
+        if weights:
+            self.w = weights
+            return
         if self.execution == 'single':
             if single_axis is None or axis_output is None or single_axis >= len(shape) or single_axis < -len(shape):
                 raise ValueError('single_axis and axis_output must be provided and valid')
@@ -24,6 +27,8 @@ class MNN_tf(keras.layers.Layer):
             axes = range(-len(self.shape),0) 
         elif sequential_order.lower() == 'descending':
             axes = reversed(range(-len(self.shape),0))
+        if self.execution == 'single':
+            axes = [min(single_axis, single_axis-len(shape))]
         else:
             raise ValueError('sequential_order value must be ascending or descending')
         self.w = {}
@@ -35,11 +40,8 @@ class MNN_tf(keras.layers.Layer):
             else:
                 raise ValueError('mode value invalid, valid mode values are shared or separate or mixture list of both')
             if self.execution == 'single':
-                if single_axis == axis or (single_axis - len(self.shape)) == axis:
-                    self.w[axis] = self.add_weight(shape=in_shape+[axis_output], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
-                    break
-                else:
-                    continue
+                self.w[axis] = self.add_weight(shape=in_shape+[axis_output], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
+                break
             self.w[axis] = self.add_weight(shape=in_shape+[shape[axis]], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
     def axis_call(self, x, w, axis):
         equation_x = string.ascii_letters[:len(x.shape)]
