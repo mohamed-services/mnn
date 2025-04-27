@@ -5,26 +5,42 @@ import keras
 import string
 
 class MNN_tf(keras.layers.Layer):
-    def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
-        super().__init__()
+    def __init__(self, shape, mode='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None = None, axis_output :int|None = None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, **kwargs):
+        super().__init__(**kwargs)
         self.shape = shape
         self.execution = execution.lower()
-        if self.execution not in ['parallel', 'sequential']:
-            raise ValueError('execution value must be parallel or sequential')
-        self.sequential_order = sequential_order.lower()
-        if type(view) == str:
-            view = [view.lower() for i in shape]
-        elif len(view) == 1:
-            view = [view[0].lower() for i in shape]
+        if self.execution not in ['parallel', 'sequential', 'single']:
+            raise ValueError('execution value must be parallel or sequential or single')
+        if self.execution == 'single':
+            if single_axis is None or axis_output is None or single_axis >= len(shape) or single_axis < -len(shape):
+                raise ValueError('single_axis and axis_output must be provided and valid')
+        if type(mode) == str:
+            mode = [mode.lower() for i in shape]
+        elif len(mode) == 1:
+            mode = [mode[0].lower() for i in shape]
+        if len(mode) != len(shape):
+            raise ValueError(f"Length of mode list ({len(mode)}) must match length of shape ({len(self.shape)}).")
+        if sequential_order.lower() == 'ascending':
+            axes = range(-len(self.shape),0) 
+        elif sequential_order.lower() == 'descending':
+            axes = reversed(range(-len(self.shape),0))
+        else:
+            raise ValueError('sequential_order value must be ascending or descending')
         self.w = {}
-        for axis in range(-len(self.shape),0):
-            if view[axis] == 'shared':
+        for axis in axes:
+            if mode[axis] == 'shared':
                 in_shape = [shape[axis]]
-            elif view[axis] == 'separate':
+            elif mode[axis] == 'separate':
                 in_shape = list(shape)
             else:
-                raise ValueError('view value missing or invalid, valid view values shared or separate')
-            self.w[axis] = self.add_weight(shape=in_shape+[shape[axis]], **kwargs)
+                raise ValueError('mode value invalid, valid mode values are shared or separate or mixture list of both')
+            if self.execution == 'single':
+                if single_axis == axis or (single_axis - len(self.shape)) == axis:
+                    self.w[axis] = self.add_weight(shape=in_shape+[axis_output], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
+                    break
+                else:
+                    continue
+            self.w[axis] = self.add_weight(shape=in_shape+[shape[axis]], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
     def axis_call(self, x, w, axis):
         equation_x = string.ascii_letters[:len(x.shape)]
         if len(w.shape) == 2: #shared
@@ -33,7 +49,7 @@ class MNN_tf(keras.layers.Layer):
             equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
         equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
         equation = equation_x + ',' + equation_w + '->' + equation_o
-        print(equation)
+        #print(equation)
         return tf.einsum(equation, x, w)
     def call(self, x):
         if self.execution == 'parallel':
@@ -41,36 +57,12 @@ class MNN_tf(keras.layers.Layer):
             for axis in self.w:
                 sub_layer.append(self.axis_call(x, self.w[axis], axis))
             x = sum(sub_layer)
-        elif self.execution == 'sequential':
-            order = self.w if self.sequential_order == 'ascending' else reversed(self.w)
-            for axis in order:
+        elif self.execution == 'sequential' or self.execution == 'single':
+            for axis in self.w:
                 x = self.axis_call(x, self.w[axis], axis)
+        else:
+            raise ValueError('execution value must be parallel or sequential or single')
         return x
-
-class resizing_layer_tf(keras.layers.Layer):
-    def __init__(self, shape, axis: int, output_shape: int, sharing: bool, **kwargs):
-        super().__init__()
-        self.shape = shape
-        self.axis = axis
-        self.w = {}
-        if sharing == True:
-            self.w[axis] = self.add_weight(shape=[shape[axis], output_shape])
-        elif sharing == False:
-            self.w[axis] = self.add_weight(shape=list(shape) + [output_shape])
-    def axis_call(self, x, w, axis):
-        equation_x = string.ascii_letters[:len(x.shape)]
-        if len(w.shape) == 2: #shared
-            equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
-        else: #separate
-            equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
-        equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
-        equation = equation_x + ',' + equation_w + '->' + equation_o
-        print(equation)
-        return tf.einsum(equation, x, w)
-    def call(self, x):
-        x = self.axis_call(x, self.w[self.axis], self.axis)
-        return x
-
 
 if __name__ == '__main__':
     import numpy as np
