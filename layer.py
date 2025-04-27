@@ -27,10 +27,10 @@ class MNN_tf(keras.layers.Layer):
             axes = range(-len(self.shape),0) 
         elif sequential_order.lower() == 'descending':
             axes = reversed(range(-len(self.shape),0))
-        if self.execution == 'single':
-            axes = [min(single_axis, single_axis-len(shape))]
         else:
             raise ValueError('sequential_order value must be ascending or descending')
+        if self.execution == 'single':
+            axes = [min(single_axis, single_axis-len(shape))]
         self.w = {}
         for axis in axes:
             if mode[axis] == 'shared':
