@@ -1,10 +1,14 @@
 
 import numpy as np
 
-w0 = np.load('weights.npy')
+axes = 4
+w = []
+for i in range(axes):
+    w.append(np.load(f'D:/mnn/model/weights/axis_{i}.npy'))
 
-# find the axis to upscale
-for i in range(len(w0)):
+w0 = [np.copy(i) for i in w1]
+
+for i in range(len(w0)): # find the axis to upscale
     axis = i
     if w0[0].shape[i] < w0[0].shape[i+1]:
         break
@@ -13,7 +17,7 @@ shape1 = np.array([i.shape for i in w0])
 shape1[:,axis] *= 2
 shape1[axis,-1] *= 2
 shape1
-w1 = [np.zeros(i, dtype=w0.dtype) for i in shape1]
+w1 = [np.zeros(i) for i in shape1]
 for i in range(len(w0)):
     if i != axis:
         w1[i] = np.concatenate([w0[i],w0[i]], axis=axis)
@@ -30,9 +34,10 @@ for i in range(len(w0)):
         w1[i][tuple(slice1)] = w0[i]
         w1[i][tuple(slice2)] = w0[i]
 
-if axis == len(w0)-1:
-    # upscale the embeddings and the unembeddings
-    pass
 
-#save and test w1
+for i in w1: i.shape
+
+
+#for i in range(len(w)):
+#    np.save(f'D:/mnn/model/weights/axis_{i}.npy', w[i])
 
