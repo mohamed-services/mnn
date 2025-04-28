@@ -1,14 +1,18 @@
 
 import numpy as np
 
-w0 = np.load('weights/weights_0.npy')
+w0 = np.load('weights.npy')
 
-axis = 2
+# find the axis to upscale
+for i in range(len(w0)):
+    axis = i
+    if w0[0].shape[i] < w0[0].shape[i+1]:
+        break
+
 shape1 = np.array([i.shape for i in w0])
 shape1[:,axis] *= 2
 shape1[axis,-1] *= 2
 shape1
-
 w1 = [np.zeros(i, dtype=w0.dtype) for i in shape1]
 for i in range(len(w0)):
     if i != axis:
@@ -25,4 +29,10 @@ for i in range(len(w0)):
         slice2[-1] = slice(shape_last, None)
         w1[i][tuple(slice1)] = w0[i]
         w1[i][tuple(slice2)] = w0[i]
+
+if axis == len(w0)-1:
+    # upscale the embeddings and the unembeddings
+    pass
+
+#save and test w1
 
