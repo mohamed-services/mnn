@@ -120,6 +120,10 @@ I haven’t tested this code enough so it might be buggy
 <https://github.com/mgostIH>  
 <https://github.com/bobbyiscool123>  
 
+## You can join our Discord Server
+
+<https://discord.gg/cJ2jpy6K>  
+
 ## In the end
 
 This is not a finished work as it is still in progress, I have not started the training process yet, as I have some issues in the architecture that I need to work on first before starting the training,
