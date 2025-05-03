@@ -126,7 +126,8 @@ I haven’t tested this code enough so it might be buggy
 
 ## In the end
 
-This work is currently under development; I am focusing on resolving architectural challenges before proceeding to the training stage. If you reached this part of the paper, I hope it was somewhat helpful to you. If you have any questions or recommendations on how to improve this architecture and are willing to share it or make it open source, please contact me or send a pull request,  
+This work is currently under development; I am focusing on resolving architectural challenges before proceeding to the training stage. If you reached this part of the paper, I hope it was somewhat helpful to you.  
+If you have any questions or recommendations on how to improve this architecture and willing to share it or make it open source, please contact me or send a pull request,  
 If you have any freelancing task or any task that needs to be outsourced please contact me,  
 You can email me on my personal email <mohamed.sourcing@gmail.com>
   
