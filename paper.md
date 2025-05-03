@@ -105,7 +105,7 @@ Also we can implement reasoning and thinking by giving the model various time st
 
 ## Implementation
 
-<https://github.com/mohamed-services/mnn/blob/main/layer.py>
+<https://github.com/mohamed-services/mnn/blob/main/layer.py>  
 you are not bounded by this implementation, you can implement the multidimensional layer however you want based on your requirements, and decide what parameters to be shared and what to stay separate,
 you can use multiple multidimensional layers in parallel like multi heads
 you can stack multiple multidimensional layers for a deeper network
@@ -126,9 +126,10 @@ I haven’t tested this code enough so it might be buggy
 
 ## In the end
 
-This is not a finished work as it is still in progress, I have not started the training process yet, as I have some issues in the architecture that I need to work on first before starting the training,
+This is not a finished work as it is still in progress, I have not started the training process yet, as I have some issues in the architecture that I need to work on first before starting the training,  
 If you reached this part of the paper, I hope it was somewhat helpful to you. If you have any questions or recommendations on how to improve this architecture and are willing to share it or make it open source, please contact me or send a pull request,  
-If you have any freelancing task or any task that needs to be outsourced please contact me, I do data entry, data annotations, bookkeeping, chat and phone customer service, IT support, secretary, virtual assistance, admin support, programming and machine learning tasks for a minimum of two dollars per hour and a maximum of seven dollars per hour depending on the task, I do these tasks myself or delegate them to someone else to do them, you can email me on my personal email <mohamed.sourcing@gmail.com>
+If you have any freelancing task or any task that needs to be outsourced please contact me,  
+You can email me on my personal email <mohamed.sourcing@gmail.com>
   
 ## References
 
