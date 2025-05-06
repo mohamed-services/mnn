@@ -20,7 +20,18 @@ layer = MNN(shape, 'tf')(inputs)
 
 model = keras.Model(inputs, layer)
 
-model.compile(keras.optimizers.SGD(2**-4), 'mse')
+model.compile(keras.optimizers.SGD(2**-2), 'mse')
 
 model.summary()
 
+def binary(size):
+    return np.array([[int(j) for j in bin(i)[2:].zfill(size)] for i in range(2**size)])
+
+size = 2
+x = binary(size) * 2 - 1
+x
+x.shape = [x.shape[0], *shape]
+
+model.evaluate(x, x)
+
+model.fit(x,x, epochs=2**16)
