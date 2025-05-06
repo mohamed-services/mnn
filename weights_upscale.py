@@ -2,9 +2,11 @@
 import numpy as np
 
 axes = 4
+#path = 'D:/mnn/model/ea/weights/'
+#path = 'D:/mnn/model/gd/weights/'
 w = []
 for i in range(axes):
-    w.append(np.load(f'D:/mnn/model/weights/axis_{i}.npy'))
+    w.append(np.load(path + f'axis_{i}.npy'))
 
 for i in range(len(w)): # find the axis to upscale
     axis = i
@@ -38,5 +40,5 @@ for i in w1: i.shape
 '''
 w = w1
 for i in range(len(w)):
-    np.save(f'D:/mnn/model/weights/axis_{i}.npy', w[i])
+    np.save(path + f'axis_{i}.npy', w[i])
 '''
