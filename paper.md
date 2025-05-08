@@ -9,7 +9,7 @@ This is an open source paper so anyone is more than welcome to clone it, improve
 ## Introduction
 
 This paper is more of a tutorial than a research paper, So the purpose of this paper is not to prove point/s nor to introduce some new discovery/ies, the purpose of this paper is to help you create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is and get similar results to some of the popular models,  
-I know that there’re some open source models on the web but most of the open source models that I can download and run locally is very inefficient in regards to the resources usage and non of them is general purpose and I need a general purpose model not just an LLM, I need a model that can handle multiple modalities at the same time like text, audio, and video and has multiples modes like autoregressive and diffusion and can alternate between factual, creative, and reasoning easily and can use tools and surf the web and to be able to mimic a human employee or a human assistant, so I have to create one for myself and with plenty of time with nothing to do except to look for any new freelancing task, And in the meanwhile I decided to document and share the process with you over multiple parts, so to start first we need a good architecture, maybe I will write another parts in the future about the training and the finetuning proccess.
+I know that there’re some open source models on the web but most of the open source models that I can download and run locally is very inefficient in regards to the resources usage and non of them is general purpose and I need a general purpose model not just an LLM, I need a model that can handle multiple modalities at the same time like text, audio, and video and has multiples modes like autoregressive and diffusion and can alternate between factual, creative, and reasoning easily and can use tools and surf the web and to be able to mimic a human employee or a human assistant, so I have to create one for myself and with plenty of time with nothing to do except to look for any new freelancing task, And in the meanwhile I decided to document and share the process with you over multiple parts, so to start first we need a good architecture.
 Usually training such a model takes millions of dollars in resources, So reducing the costs like a thousand fold is not an easy task, I know I need to move from dynamical architectures like transformers to a fixed architecture like MLP with dynamical resources assignment inspired by the biological neural networks, and from two dimensions to higher dimensions, and from full training to partial training or blind training, and from chat finetuning to identity embedding, and maybe all of this will not be enough, I know that every step in the process needs to be optimized or changed to achieve that, and there’re a lot of things to work on and it will take a long time, but I know that eventually I will get the wanted results,  
 I feel that I need to introduce myself to clear the motivation and to set some expectations, programming and machine learning was a little hobby of mine but I gave up on this hobby some years ago, and I’m trying to get back to it right now because I need an AI model to be my assistant and the large companies don't provide what I exactly need, there are a lot of advancements in past few years so I'm trying to catch up with the recent advancements in the field, I just want to make it clear that I'm not a machine learning engineer nor a software engineer, I'm more of a programming and a machine learning fan,
 Also be cautious about any mathematical calculation, code snippet or any unproved claim in this paper, as maybe further verification is needed,
@@ -58,7 +58,7 @@ I’m not saying that I have the designs and architecture needed to do it, I’m
 ## Tokenization
 
 I'll use byte based tokenization for all modalities, and will encode one byte in eight tokens using the binary values negative one and positive one, So the text may take from one to four bytes, Images will take three bytes, Audio will take two bytes,
-I'll not use any embedding nor unembedding layers and the model will handle the inputs and outputs bytes binary values directly, This is not the rcomendded way for tokenization but it's more suitable for my constrained hardware,  
+I'll not use any embedding nor unembedding layers and the model will handle the inputs and outputs bytes binary values directly, This is not the recommended way for the tokenization but it's more suitable for my constrained hardware,  
 
 ## Padding
 
@@ -88,10 +88,10 @@ Also we can implement reasoning and thinking by giving the model various time st
   
 ## Training
 
-I'll create two models using two differnet training techniques:
-Gradient Descent model and it will be mostly open source and for production purposes, and its implementaion will be in  
+I'll create two models using two different training techniques:
+Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in  
 <https://github.com/mohamed-services/mnn/tree/main/model/gd/weights>  
-Evolutionary model and it will be mostly closed source and for experimentation purposes, and its implementaion will be in  
+Evolutionary model and it will be mostly closed source and for experimentation purposes, and its implementation will be in  
 <https://github.com/mohamed-services/mnn/tree/main/model/ea/weights>  
 
 ## Partial training
