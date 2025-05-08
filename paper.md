@@ -70,9 +70,9 @@ I’ll start my model with a context window of one character or one pixel then I
 My final goal will be a context window of one billion tokens,
 Why you may need a model that can handle context window with billions of tokens because you can use the model to handle thousands of prompts at the same time, but you will need a way for the model to share the knowledge without mixing the inputs and that if you want the model to act as a database or a search engine, or you’re dealing with large files like videos,
   
-## system prompt
+## Model identity
 
-We will not use model fine-tuning to convert the model to a chatbot instead we will use prompt fine-tuning where the model weights will be frozen and the training goal is to get a learned system prompt or prefix values that makes this model output this response to the user request,  
+We will not use model fine-tuning to convert the model to a chatbot instead we will use prompt fine-tuning where the model weights will be frozen and the training goal is to get a learned system prompt or prefix values that makes this model output this response to this inquiry,  
 And this will allow us to continue the training process on general content as much as we want, and will just use the learned system prompt before the user prompt,  
 
 ## Sparsity
