@@ -31,6 +31,10 @@ Multidimensional neural network, is like any ordinary feedforward neural network
 If we have one fully connected layer of one hundred neurons with input size of one hundred then this fully connected layer will have ten thousand connections (100^2), We can reduce the number of parameters while keeping this layer fully connected by reshaping the input from one dimension of one hundred to two dimensions of ten by ten and run ten different dense layers with ten neurons inside on each row and run another ten dense layers with ten neurons inside on each column and sum the two sets, then the number of the parameters will be (10^3)+(10^3) which is equal to 2,000 parameters but because we converted the 1d input to 2d then we need to run the sublayers on the two axes sequentially over two steps or we will need to stack two layers, because the maximum number of steps needed to move information from any point to any point using a straight line in a multidimensional array is equal to the number of dimensions so we need one step for 1d and two steps for 2d and three steps for 3d and so on,
 And those numbers are for non-shared or spatially separate parameters, but if we will share the parameters inside every axis the number of parameters will be ((10^2) + (10^2)) = 200 shared parameters, also if all the axes are of the same size then we can share the parameters of one axis with all the axes and the number of parameters will be (10^2) = 100, and in general you can decide what parameters you want to be shared inside your model and how it will be shared between the neurons and what parameters you don’t want to be shared inside your model based on your requirements,
   
+## Layer resizing
+
+The multidimensional layers give you the freedom to resize the layers shape whatever you want by using a dense layer on the specific axis you want to resize, like how the feedforward layers allows you to get different output size than the input,  
+
 ## Biases
 
 Note that the biases are not accounted for in the above calculations because if you will use an embedding layer as an input layer then using the biases is optional inside the hidden layers, but you’re free to use biases in your model,
@@ -42,23 +46,20 @@ Your model may perform better with partial activation instead of full activation
   
 ## Connectivity
 
-There're a lot of ways to wire a multidimensional layer for example you can make it fully wired or wire it randomly or wire nodes to their close neighbors using sliding convolution kernels, or using neural architecture search to find the best wiring pattern, you can use any sparse wiring technique that suits your targets, I’ll will wire my model using axis point of view like using rows and columns etc., so every node will be connected to every other node that shares all the dimensional coordinates or indexes with it but doesn’t share exactly one coordinate or index with it as explained above,
+There're a lot of ways to wire a multidimensional layer for example you can make it fully wired or wire it randomly or wire nodes to their close neighbors using sliding n-dimensional convolution kernels, or using neural architecture search to find the best wiring pattern, you can use any dense or sparse wiring technique that suits your targets, I’ll will wire my model using axis based point of view like using rows and columns etc., so every node will be connected to every other node that shares all the dimensional coordinates or indexes with it but doesn’t share exactly one coordinate or index with it as explained above,
   
 ## Network design
 
 you're free to design the network the way you want by choosing how many dimensions and the size of every dimension also the number of the hidden layers and what kind of layers to include and what not to include so you're not bounded by any design pattern, and for my model I’ll use one multidimensional layer with separate or non-shared parameters , I’ll start with a small context window and will scale the model up slowly while training, also the previous outputs will be refed to the network multiple times before getting the final outputs, I know that I should use shared parameters architecture with lower number of dimensions and large dimension size and multiple hidden layers and that is the right way to do it, but I'll use fully separate parameters architecture for my model because it will be more suitable for the training techniques that I’ll use later,  
   
 A fun side note you can simulate a human brain with a layer of shape (4096, 4096, 4096) with action potentials and STDP learning in real time on an exaflop server that costs less than 500 million dollars, that’s just to show that our problem is more in the software like the designs and the architectures that we are using than in the hardware, if the problem was in the hardware then the world have now the needed hardware to run an artificial super intelligence system, and within two or three decades the hardware will get cheaper till every child will have enough hardware to download and run an artificial super intelligence system on his computer,  
-I’m not saying that I have the designs and architecture needed to do it, I’m pointing out how much we need to work on our current methods, I’m in a position right now that I don’t have the hardware nor the designs and architectures to build a simple general-purpose model,
-  
-## Layer resizing
+I’m not saying that I have the designs and architecture needed to do it, I’m pointing out how much we need to work on our current methods, I’m in a position right now that I don’t have the hardware nor the designs and architectures to build a simple general-purpose model,  
 
-The multidimensional layers give you the freedom to resize the layers shape whatever you want by using a dense layer on the specific axis you want to resize, like how the feedforward layers allows you to get different output size than the input,
-  
 ## Tokenization
 
-I'll use byte based tokenization for all modalities, and will encode only one byte in every segment, So text may take from one to four segments, Images will take three segments, Audio will take two segments,
-  
+I'll use byte based tokenization for all modalities, and will encode one byte in eight tokens using the binary values negative one and positive one, So the text may take from one to four bytes, Images will take three bytes, Audio will take two bytes,
+I'll not use any embedding nor unembedding layers and the model will handle the inputs and outputs bytes binary values directly, This is not the rcomendded way for tokenization but it's more suitable for my constrained hardware,  
+
 ## Padding
 
 Transformer models gives flexible context window, but the feedforward models needs fixed context window so we have to pad our inputs to a fixed size so the feedforward layers can process it, you can leave the beginning of your inputs and only pad the end of the inputs, but for me all the inputs will be padded with random number of zeros before it and the inputs will be zero padded after it till the end of the model input size so the position of the input will be random not in the beginning of the context window,  
@@ -85,6 +86,14 @@ The brain is a fixed size neural network its size doesn't change based on the in
 Because we are using fixed network size instead of dynamical size, we can feed the inputs whole sequence in one shot to the model, run the model and get the outputs whole sequence in one shot, or we can feed the inputs word by word to the model and get the outputs word by word like how the transformers work,  
 Also we can implement reasoning and thinking by giving the model various time steps to run by refeeding the model with its own outputs multiple times with backpropagation through time, depending on the length of the inputs and the outputs or the difficulty of the problem, so it can internally reason about the inputs before giving a final output, and the model doesn't need to output its chain of thoughts unless it was explicitly was told to do so,  
   
+## Training
+
+I'll create two models using two differnet training techniques:
+Gradient Descent model and it will be mostly open source and for production purposes, and its implementaion will be in  
+<https://github.com/mohamed-services/mnn/tree/main/model/gd/weights>  
+Evolutionary model and it will be mostly closed source and for experimentation purposes, and its implementaion will be in  
+<https://github.com/mohamed-services/mnn/tree/main/model/ea/weights>  
+
 ## Partial training
 
 </br>
