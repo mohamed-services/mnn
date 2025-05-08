@@ -106,10 +106,6 @@ Evolutionary model and it will be mostly closed source and for experimentation p
 
 </br>
 
-## Identity embedding
-
-</br>
-
 ## General intelligence rate with human evaluation
 
 </br>
