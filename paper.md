@@ -106,11 +106,11 @@ Evolutionary model and it will be mostly closed source and for experimentation p
 
 </br>
 
-## General intelligence rate with human evaluation
+## General intelligence score with human evaluation
 
 </br>
 
-## General intelligence rate with auto evaluation
+## General intelligence score with auto evaluation
 
 </br>
 
