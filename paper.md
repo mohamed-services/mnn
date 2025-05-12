@@ -88,11 +88,11 @@ Also we can implement reasoning and thinking by giving the model various time st
   
 ## Training
 
-I'll create two models using two different training techniques:
+I'll create two models using two different training techniques:  
 Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in  
-<https://github.com/mohamed-services/mnn/tree/main/model/gd/weights>  
-Evolutionary model and it will be mostly closed source and for experimentation purposes, and its implementation will be in  
-<https://github.com/mohamed-services/mnn/tree/main/model/ea/weights>  
+<https://github.com/mohamed-services/mnn/tree/main/model/sgd>  
+Experimental model and it will be mostly closed source and for experimentation purposes, and its implementation will be in  
+<https://github.com/mohamed-services/mnn/tree/main/model/experimental>  
 
 ## Partial training
 
