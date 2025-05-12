@@ -86,14 +86,6 @@ The brain is a fixed size neural network its size doesn't change based on the in
 Because we are using fixed network size instead of dynamical size, we can feed the inputs whole sequence in one shot to the model, run the model and get the outputs whole sequence in one shot, or we can feed the inputs word by word to the model and get the outputs word by word like how the transformers work,  
 Also we can implement reasoning and thinking by giving the model various time steps to run by refeeding the model with its own outputs multiple times with backpropagation through time, depending on the length of the inputs and the outputs or the difficulty of the problem, so it can internally reason about the inputs before giving a final output, and the model doesn't need to output its chain of thoughts unless it was explicitly was told to do so,  
   
-## Training
-
-I'll create two models using two different training techniques:  
-Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in  
-<https://github.com/mohamed-services/mnn/tree/main/model/sgd>  
-Experimental model and it will be mostly closed source and for experimentation purposes, and its implementation will be in  
-<https://github.com/mohamed-services/mnn/tree/main/model/experimental>  
-
 ## Partial training
 
 </br>
@@ -116,6 +108,13 @@ Experimental model and it will be mostly closed source and for experimentation p
 
 ## Implementation
 
+I'll create two models using two different training techniques:  
+Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in  
+<https://github.com/mohamed-services/mnn/tree/main/model/sgd>  
+Experimental model and it will be mostly closed source and for experimentation purposes, and its implementation will be in  
+<https://github.com/mohamed-services/mnn/tree/main/model/experimental>  
+
+Multidimensional layer implementation  
 <https://github.com/mohamed-services/mnn/blob/main/layer.py>  
 you are not bounded by this implementation, you can implement the multidimensional layer however you want based on your requirements, and decide what parameters to be shared and what to stay separate,
 you can use multiple multidimensional layers in parallel like multi heads
