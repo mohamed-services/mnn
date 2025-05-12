@@ -5,7 +5,7 @@ This is an open source project so anyone is more than welcome to clone it, impro
 the purpose of this paper is to help you create a full general purpose AI model that can be trained from scratch on a personal computer and scaled based on the user requirements.  
 
 The Multidimensional neural networks paper is on  
-<https://github.com/mohamed-services/mnn/blob/main/paper.md>  
+</paper.md>  
 
 If you have any questions or recommendations on how to improve this architecture and willing to share it or make it open source, please contact me or send a pull request,  
 If you have any freelancing task or any task that needs to be outsourced please contact me,  
