@@ -132,7 +132,7 @@ I haven’t tested this code enough so it might be buggy
 
 ## You can join our Discord Server
 
-<https://discord.gg/cJ2jpy6K>  
+<https://discord.gg/Mb7QPbAq>
 
 ## In the end
 
