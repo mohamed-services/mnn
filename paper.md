@@ -41,7 +41,7 @@ Note that the biases are not accounted for in the above calculations because if 
   
 ## Activation function
 
-You can choose any activation function you want in your model as any nonlinear function will work, most probably I’ll use one of the following candidates for my model (abs, relu, leakyrelu, elu, melu and sort2)  # melu(x) = x * exp(min (x,0)) melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks,
+You can choose any activation function you want in your model as any nonlinear function will work, most probably I’ll use one of the following candidates for my model (abs, relu, leakyrelu, elu, melu and sort2)  # melu(x) = x * exp(min (x,0)) melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks,  
 Your model may perform better with partial activation instead of full activation, I think you should give it a try, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter as linear as it is, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,
   
 ## Connectivity
