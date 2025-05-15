@@ -57,8 +57,8 @@ I’m not saying that I have the designs and architecture needed to do it, I’m
 
 ## Tokenization
 
-I'll use byte based tokenization for all modalities, and will encode one byte in eight tokens using the binary values negative one and positive one, So the text may take from one to four bytes, Images will take three bytes, Audio will take two bytes,
-I'll not use any embedding nor unembedding layers and the model will handle the inputs and outputs bytes binary values directly, This is not the recommended way for the tokenization but it's more suitable for my constrained hardware,  
+I'll use bit based tokenization for all modalities, So every token will equal one bit of two binary values negative one and psoitive one, So the UTF8 text may take from 8 to 32 bits, Images signals will take 24 bits, Audio signals will take 16 bits,
+I'll not use any embedding nor unembedding layers and the model will handle the inputs and outputs binary values directly, Not using embedding and unembedding layers isn't the recommended way for the tokenization but it's more suitable for my constrained hardware,  
 
 ## Padding
 
