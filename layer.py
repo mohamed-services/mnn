@@ -1,5 +1,16 @@
 
-def MNN(shape, backend: str, mode :str|list[str]='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None=None, axis_output :int|None=None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, weights :dict|None=None, **kwargs):
+def MNN(shape, 
+        backend: str, 
+        mode :str|list[str]='separate', 
+        execution :str='parallel', 
+        sequential_order: str='ascending', 
+        single_axis :int|None=None, 
+        axis_output :int|None=None, 
+        kernel_initializer=None, 
+        kernel_regularizer=None, 
+        kernel_constraint=None, 
+        weights :dict|None=None, 
+        **kwargs):
     import string
     shape = list(shape) # shape of the input, must be a list of integers, doesn't include the batch size
     backend = backend.lower()
