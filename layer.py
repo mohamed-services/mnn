@@ -1,5 +1,5 @@
 
-def MNN(shape, 
+def MNN(shape, # shape of the input, must be a list of integers, doesn't include the batch size
         backend: str, 
         mode :str|list[str]='separate', 
         execution :str='parallel', 
@@ -11,7 +11,7 @@ def MNN(shape,
         kernel_constraint=None, 
         weights :dict|None=None, 
         **kwargs):
-    shape = list(shape) # shape of the input, must be a list of integers, doesn't include the batch size
+    shape = list(shape) 
     backend = backend.lower()
     if backend == 'tensorflow' or backend == 'keras' or backend == 'tf':
         import tensorflow as tf
@@ -50,11 +50,7 @@ def MNN(shape,
     if execution == 'single':
         axes = [min(single_axis, single_axis-len(shape))]
     w = {}
-    if weights:
-        w = weights
-        axes = []
     for axis in axes:
-        if weights: break
         if mode[axis] == 'shared':
             in_shape = [shape[axis]]
         elif mode[axis] == 'separate':
