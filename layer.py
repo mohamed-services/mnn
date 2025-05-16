@@ -11,7 +11,6 @@ def MNN(shape,
         kernel_constraint=None, 
         weights :dict|None=None, 
         **kwargs):
-    import string
     shape = list(shape) # shape of the input, must be a list of integers, doesn't include the batch size
     backend = backend.lower()
     if backend == 'tensorflow' or backend == 'keras' or backend == 'tf':
@@ -75,6 +74,7 @@ def MNN(shape,
             w[axis] = param
         elif backend == 'jax' or backend == 'flax':
             w[axis] = layer.param(f'weight_{axis}', shape=in_shape+out_shape, init_fn=flax.linen.initializers.glorot_uniform)
+    import string
     def axis_call(x, w, axis):
         equation_x = string.ascii_letters[:len(x.shape)]
         if len(w.shape) == 2: #shared
