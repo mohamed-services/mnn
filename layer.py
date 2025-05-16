@@ -61,10 +61,15 @@ def MNN(shape, # shape of the input, must be a list of integers, doesn't include
         if execution == 'single':
             out_shape = [axis_output]
         if backend == 'tensorflow' or backend == 'keras' or backend == 'tf':
+            if weights:
+                kernel_initializer = keras.initializers.Constant(weights[axis])
             w[axis] = layer.add_weight(shape=in_shape+out_shape, initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
         elif backend == 'torch' or backend == 'pytorch':
-            param = torch.nn.Parameter(torch.empty(in_shape+out_shape))
-            torch.nn.init.xavier_uniform(param)
+            if weights:
+                param = torch.nn.Parameter(torch.from_numpy(weights[axis]))
+            else:
+                param = torch.nn.Parameter(torch.empty(in_shape+out_shape))
+                torch.nn.init.xavier_uniform(param)
             param_name = f'weight_{axis}'
             layer.register_parameter(param_name, param)
             w[axis] = param
