@@ -18,7 +18,7 @@ def MNN(shape, backend: str, mode :str|list[str]='separate', execution :str='par
         layer = flax.linen.Module(**kwargs)
         einsum = jax.numpy.einsum
     else:
-        raise ValueError('backend must be tensorflow or torch or jax')
+        raise ValueError('backend value must be tensorflow or torch or jax')
     execution = execution.lower()
     if execution not in ['parallel', 'sequential', 'single']:
         raise ValueError('execution value must be parallel or sequential or single')
