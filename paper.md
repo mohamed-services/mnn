@@ -43,9 +43,9 @@ Note that the biases are not accounted for in the above calculations because if 
 
 The following activation functions are the candidates for the mnn model  
 relu: pros (simple to compute, sparse, recommended overall) cons (sharp, dying nodes)  
-leakyrelu: leakyrelu(x) = max(x, 0.25*x)
+leakyrelu: leakyrelu(x) = max(x, 0.25*x)  
 hardtanh: hardtanh(x) = clip(x, -1, 1). recomended if you will quantize your model and will use fixed point arithmetic as it more compatible with a Fixed-point arithmetic by making the minimum and the maximum limit of the datatype the same as the activation function for example an 8 bit datatype will have 256 values from approximatly negative one to approximatly positive one and any lower or higher value will be clipped naturally by the datatype  
-elu:  
+elu: elu(x) = x if x >= 0 else exp(x) - 1  
 melu: melu(x) = x*exp(min(x,0)). melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks as it have better data flow compared to gelu, silu, and mish  
 sort2: sort2(x) = reshape(x, [-1, 2]); sort(x, axis=-1); reshape(x, original_shape)  
 
