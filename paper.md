@@ -46,7 +46,7 @@ relu: pros (simple to compute, sparse, recommended overall) cons (sharp, dying n
 leakyrelu: leakyrelu(x) = max(x, 0.25*x)
 hardtanh: hardtanh(x) = clip(x, -1, 1). recomended if you will quantize your model and will use fixed point arithmetic as it more compatible with a Fixed-point arithmetic by making the minimum and the maximum limit of the datatype the same as the activation function for example an 8 bit datatype will have 256 values from approximatly negative one to approximatly positive one and any lower or higher value will be clipped naturally by the datatype  
 elu:  
-melu: melu(x) = x × exp(min(x,0)). melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks as it have better data flow compared to gelu, silu, and mish  
+melu: melu(x) = x*exp(min(x,0)). melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks as it have better data flow compared to gelu, silu, and mish  
 sort2: sort2(x) = reshape(x, [-1, 2]); sort(x, axis=-1); reshape(x, original_shape)  
 
 Some models may perform better with a partial activation instead of full activation, I think you should give it a try, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter as linear as it is, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,
