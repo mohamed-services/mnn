@@ -123,6 +123,8 @@ Experimental model and it will be mostly closed source and for experimentation p
 
 Multidimensional layer implementation  
 <https://github.com/mohamed-services/mnn/blob/main/layer.py>  
+Or  
+<https://github.com/mohamed-services/mnn/blob/main/mnn_layer.py>  
 you are not bounded by this implementation, you can implement the multidimensional layer however you want based on your requirements, and decide what parameters to be shared and what to stay separate,
 you can use multiple multidimensional layers in parallel like multi heads
 you can stack multiple multidimensional layers for a deeper network
