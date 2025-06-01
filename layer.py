@@ -88,8 +88,7 @@ def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
             w_shape = w_shapes[axis]
             init_fn = nn.initializers.uniform(w_shape[-1]**-0.5) 
             if weights:
-                pre_trained_weight = weights[axis]
-                #init_fn = lambda _key, _shape, _dtype: jnp.asarray(pre_trained_weight, dtype=_dtype)
+                #init_fn = lambda _key, _shape, _dtype: jnp.asarray(weights[axis], dtype=_dtype)
                 init_fn = nn.initializers.constant(weights[axis])
             layer.w[axis] = layer.param(f'weight_{axis}', init_fn, w_shape)
         return layer
