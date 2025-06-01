@@ -44,7 +44,8 @@ def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
         layer.einsum = tf.einsum
         layer.backend = 'tensorflow'
         layer.w = {}
-        for axis, w_shape in w_shapes:
+        for axis in w_shapes:
+            w_shape = w_shapes[axis]
             if kernel_initializer == None:
                 kernel_initializer = keras.initializers.RandomUniform(minval=-w_shape[-1]**-0.5, maxval=w_shape[-1]**-0.5)
             if weights:
@@ -61,7 +62,8 @@ def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
         layer.einsum = torch.einsum
         layer.backend = 'pytorch'
         layer.w = {}
-        for axis, w_shape in w_shapes:
+        for axis in w_shapes:
+            w_shape = w_shapes[axis]
             if weights:
                 param = torch.nn.Parameter(torch.from_numpy(weights[axis]))
             else:
@@ -82,7 +84,8 @@ def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
         layer.einsum = jax.numpy.einsum
         layer.backend = 'jax'
         layer.w = {}
-        for axis, w_shape in w_shapes:
+        for axis in w_shapes:
+            w_shape = w_shapes[axis]
             current_init_fn = nn.initializers.uniform(w_shape[-1]**-0.5) 
             if weights:
                 pre_trained_weight = weights[axis]
@@ -140,7 +143,7 @@ def __init__(shape, # shape of the input, must be a list of integers, doesn't in
         out_shape = [shape[axis]]
         if execution_order == 'single':
             out_shape = [axis_output]
-        w_shapes.append([axis, in_shape+out_shape])
+        w_shapes[axis] = in_shape+out_shape
     # validate backend input value and create the layer instance 
     layer = get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs)
     layer.execution_order = execution_order
