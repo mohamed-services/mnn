@@ -94,7 +94,7 @@ def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
             f"Unsupported backend: '{backend}'. Supported backends are: {', '.join(list(backend_aliases.keys()))}."
         )
 
-def init(shape, # shape of the input, must be a list of integers, doesn't include the batch size
+def __init__(shape, # shape of the input, must be a list of integers, doesn't include the batch size
         backend: str, 
         mode :str|list[str]='separate', 
         execution_order :str='parallel', 
