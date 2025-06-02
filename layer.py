@@ -95,18 +95,7 @@ def get_base_layer(backend, w_shapes, weights, **kwargs):
     else:
         raise ValueError(f"Unsupported backend: '{backend}'. Supported backends are: {', '.join(list(backend_aliases.keys()))}.")
 
-def __init__(shape, # shape of the input, must be a list of integers, doesn't include the batch size
-        backend: str, 
-        mode :str|list[str]='separate', 
-        execution_order :str='parallel', 
-        sequential_order: str='ascending', 
-        single_axis :int|None=None, 
-        axis_output :int|None=None, 
-        weights :dict|None=None, 
-        **kwargs):
-    # validate shape input value is a list 
-    shape = list(shape) 
-    # validate mode input value
+def get_mode(shape, mode, execution_order, sequential_order, single_axis, axis_output):
     if type(mode) == str:
         mode = [mode.lower() for _ in shape]
     elif len(list(mode)) == 1:
@@ -128,6 +117,21 @@ def __init__(shape, # shape of the input, must be a list of integers, doesn't in
             raise ValueError('single_axis and axis_output must be provided and valid')
         else:
             axes = [min(single_axis, single_axis-len(shape))]
+    return axes, mode, execution_order
+
+def __init__(shape, # shape of the input, must be a list of integers, doesn't include the batch size
+        backend: str, 
+        mode :str|list[str]='separate', 
+        execution_order :str='parallel', 
+        sequential_order: str='ascending', 
+        single_axis :int|None=None, 
+        axis_output :int|None=None, 
+        weights :dict|None=None, 
+        **kwargs):
+    # validate shape input value is a list 
+    shape = list(shape) 
+    # validate mode input value
+    axes, mode, execution_order = get_mode(shape, mode, execution_order, sequential_order, single_axis, axis_output)
     # calculate the weights shapes for each axis
     w_shapes = {}
     for axis in axes:
