@@ -25,7 +25,7 @@ def layer_call(self, x):
             x = axis_call(x, self.w[axis], axis, self.einsum)
     return x
 
-def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
+def get_base_layer(backend, w_shapes, weights, **kwargs):
     """Dynamically imports and returns backend-specific base layer and einsum function."""
     backend_aliases = {
     'tensorflow': ['tensorflow', 'keras', 'tf'],
@@ -46,10 +46,10 @@ def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
         layer.w = {}
         for axis in w_shapes:
             w_shape = w_shapes[axis]
-            if kernel_initializer == None:
-                kernel_initializer = keras.initializers.RandomUniform(minval=-w_shape[-1]**-0.5, maxval=w_shape[-1]**-0.5)
             if weights:
                 kernel_initializer = keras.initializers.Constant(weights[axis])
+            else:
+                kernel_initializer = keras.initializers.RandomUniform(minval=-sum(w_shape[:-1])**-0.5, maxval=sum(w_shape[:-1])**-0.5)
             layer.w[axis] = layer.add_weight(shape=w_shape, initializer=kernel_initializer, trainable=True, name=f'weight_{axis}')
         return layer
     elif backend in backend_aliases['pytorch']:
@@ -68,7 +68,7 @@ def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
                 param = torch.nn.Parameter(torch.from_numpy(weights[axis]))
             else:
                 param = torch.nn.Parameter(torch.empty(w_shape))
-                torch.nn.init.uniform(param, a=-w_shape[-1]**-0.5, b=w_shape[-1]**-0.5)
+                torch.nn.init.uniform(param, a=-sum(w_shape[:-1])**-0.5, b=sum(w_shape[:-1])**-0.5)
             layer.register_parameter(f'weight_{axis}', param)
             layer.w[axis] = param
         return layer
@@ -86,16 +86,15 @@ def get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs):
         layer.w = {}
         for axis in w_shapes:
             w_shape = w_shapes[axis]
-            init_fn = nn.initializers.uniform(w_shape[-1]**-0.5) 
             if weights:
                 #init_fn = lambda _key, _shape, _dtype: jnp.asarray(weights[axis], dtype=_dtype)
                 init_fn = nn.initializers.constant(weights[axis])
+            else:
+                init_fn = nn.initializers.uniform(sum(w_shape[:-1])**-0.5) 
             layer.w[axis] = layer.param(f'weight_{axis}', init_fn, w_shape)
         return layer
     else:
-        raise ValueError(
-            f"Unsupported backend: '{backend}'. Supported backends are: {', '.join(list(backend_aliases.keys()))}."
-        )
+        raise ValueError(f"Unsupported backend: '{backend}'. Supported backends are: {', '.join(list(backend_aliases.keys()))}.")
 
 def __init__(shape, # shape of the input, must be a list of integers, doesn't include the batch size
         backend: str, 
@@ -104,7 +103,6 @@ def __init__(shape, # shape of the input, must be a list of integers, doesn't in
         sequential_order: str='ascending', 
         single_axis :int|None=None, 
         axis_output :int|None=None, 
-        kernel_initializer=None, 
         weights :dict|None=None, 
         **kwargs):
     # validate shape input value is a list 
@@ -145,7 +143,7 @@ def __init__(shape, # shape of the input, must be a list of integers, doesn't in
             out_shape = [axis_output]
         w_shapes[axis] = in_shape+out_shape
     # validate backend input value and create the layer instance 
-    layer = get_base_layer(backend, w_shapes, kernel_initializer, weights, **kwargs)
+    layer = get_base_layer(backend, w_shapes, weights, **kwargs)
     layer.execution_order = execution_order
     return layer
 
