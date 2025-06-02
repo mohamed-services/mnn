@@ -1,6 +1,7 @@
 
 from string import ascii_letters
 import types
+from typing import Iterable
 
 def axis_call(x, w, axis, einsum):
     equation_x = ascii_letters[:len(x.shape)]
@@ -119,7 +120,7 @@ def get_mode(shape, mode, execution_order, sequential_order, single_axis, axis_o
             axes = [min(single_axis, single_axis-len(shape))]
     return axes, mode, execution_order
 
-def __init__(shape, # shape of the input, must be a list of integers, doesn't include the batch size
+def __init__(shape: list|tuple|Iterable, # shape of the input, must be a list of integers, doesn't include the batch size
         backend: str, 
         mode :str|list[str]='separate', 
         execution_order :str='parallel', 
@@ -129,7 +130,10 @@ def __init__(shape, # shape of the input, must be a list of integers, doesn't in
         weights :dict|None=None, 
         **kwargs):
     # validate shape input value is a list 
-    shape = list(shape) 
+    try:
+        shape = list(shape) 
+    except Exception as e:
+        raise ValueError(f"shape must be a list or tuple or iterable, got {type(shape)}") from e
     # validate mode input value
     axes, mode, execution_order = get_mode(shape, mode, execution_order, sequential_order, single_axis, axis_output)
     # calculate the weights shapes for each axis
