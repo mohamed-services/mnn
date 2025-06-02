@@ -87,7 +87,6 @@ def get_base_layer(backend, w_shapes, weights, **kwargs):
         for axis in w_shapes:
             w_shape = w_shapes[axis]
             if weights:
-                #init_fn = lambda _key, _shape, _dtype: jnp.asarray(weights[axis], dtype=_dtype)
                 init_fn = nn.initializers.constant(weights[axis])
             else:
                 init_fn = nn.initializers.uniform(sum(w_shape[:-1])**-0.5) 
@@ -144,6 +143,7 @@ def __init__(shape, # shape of the input, must be a list of integers, doesn't in
         w_shapes[axis] = in_shape+out_shape
     # validate backend input value and create the layer instance 
     layer = get_base_layer(backend, w_shapes, weights, **kwargs)
+    # set execution order 
     layer.execution_order = execution_order
     return layer
 
