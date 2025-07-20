@@ -161,8 +161,11 @@ def __init__(shape: list|tuple|Iterable, # shape of the input, must be a list of
 
 
 # tensorflow implementation
-import tensorflow as tf
-import keras
+try:
+    import tensorflow as tf
+    import keras
+except ImportError:
+    pass
 
 class MNN_tf(keras.layers.Layer):
     def __init__(self, shape, mode :str|list[str]='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None=None, axis_output :int|None=None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, weights=None, **kwargs):
@@ -228,7 +231,10 @@ class MNN_tf(keras.layers.Layer):
 
 
 # torch implementation
-import torch
+try:
+    import torch
+except ImportError:
+    pass
 
 class MNN_torch(torch.nn.Module):
     def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
@@ -279,9 +285,12 @@ class MNN_torch(torch.nn.Module):
 
 
 # jax implementation
-import jax.numpy as jnp
-from flax import linen as nn
-from typing import Union, List
+try:
+    import jax.numpy as jnp
+    from flax import linen as nn
+    from typing import Union, List
+except ImportError:
+    pass
 
 class MNN_jax(nn.Module):
     shape: tuple
