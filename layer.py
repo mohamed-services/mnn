@@ -3,6 +3,7 @@ import string
 from string import ascii_letters
 import types
 from typing import Iterable
+import sys
 
 def axis_call(x, w, axis, einsum):
     equation_x = ascii_letters[:len(x.shape)]
@@ -161,11 +162,11 @@ def __init__(shape: list|tuple|Iterable, # shape of the input, must be a list of
 
 
 # tensorflow implementation
-try:
+# import tensorflow and keras if they are available
+# you must import the backend before importing this module
+if 'tensorflow' in sys.modules and 'keras' in sys.modules:
     import tensorflow as tf
     import keras
-except ImportError:
-    pass
 
 class MNN_tf(keras.layers.Layer):
     def __init__(self, shape, mode :str|list[str]='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None=None, axis_output :int|None=None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, weights=None, **kwargs):
@@ -231,10 +232,10 @@ class MNN_tf(keras.layers.Layer):
 
 
 # torch implementation
-try:
+# import torch if it is available
+# you must import the backend before importing this module
+if 'torch' in sys.modules:
     import torch
-except ImportError:
-    pass
 
 class MNN_torch(torch.nn.Module):
     def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
@@ -285,12 +286,12 @@ class MNN_torch(torch.nn.Module):
 
 
 # jax implementation
-try:
+# import jax and flax if they are available
+# you must import the backend before importing this module
+if 'jax' in sys.modules and 'flax' in sys.modules:
     import jax.numpy as jnp
     from flax import linen as nn
     from typing import Union, List
-except ImportError:
-    pass
 
 class MNN_jax(nn.Module):
     shape: tuple
