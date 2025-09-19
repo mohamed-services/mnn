@@ -126,7 +126,7 @@ Also we can implement reasoning and thinking by giving the model various time st
 
 I'll create two models using two different training techniques:  
 Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in  
-<https://github.com/mohamed-services/mnn/tree/main/model/>  
+<https://github.com/mohamed-services/mnn/tree/main/model/sgd>  
 Experimental model and it will be mostly closed source and for experimentation purposes.  
 
 Multidimensional layer implementation  
@@ -172,7 +172,7 @@ You can email me on my personal email <mohamed.sourcing@gmail.com>
 \
 \
 
----
+'''
 
 import string
 from string import ascii_letters
@@ -524,4 +524,4 @@ class MNN_jax(nn.Module):
                 x = self.axis_call(x, w, axis)
             return x
 
----
+'''
