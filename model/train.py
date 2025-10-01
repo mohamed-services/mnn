@@ -7,7 +7,7 @@ import tensorflow as tf
 import keras
 from mnn.layer import MNN  # type: ignore
 
-path = 'D:/mnn/model/gd/weights/'
+path = 'D:/mnn/model/weights/'
 w = []
 for i in range(len(os.listdir(path))):
     w.append(np.load(path+f'axis_{i}.npy').astype(np.float64))
@@ -21,6 +21,8 @@ layer = MNN(shape, 'tf')(inputs)
 model = keras.Model(inputs, layer)
 
 model.compile(keras.optimizers.SGD(2**-2), 'mse')
+
+model.set_weights(w)
 
 model.summary()
 
