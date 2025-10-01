@@ -3,8 +3,7 @@ import numpy as np
 
 axes = 4
 path = None
-#path = 'D:/mnn/model/experimental/weights/'
-#path = 'D:/mnn/model/sgd/weights/'
+#path = 'D:/mnn/model/weights/'
 w = []
 for i in range(axes):
     w.append(np.load(path + f'axis_{i}.npy'))
