@@ -126,7 +126,7 @@ Also we can implement reasoning and thinking by giving the model various time st
 
 I'll create two models using two different training techniques:  
 Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in  
-<https://github.com/mohamed-services/mnn/tree/main/model/sgd>  
+<https://github.com/mohamed-services/mnn/tree/main/model>  
 Experimental model and it will be mostly closed source and for experimentation purposes.  
 
 Multidimensional layer implementation  
@@ -139,12 +139,6 @@ this implementation is in TensorFlow, but you can convert it to PyTorch very eas
 In this implementation every node is connected to itself multiple times which is inefficient in the parallel mode
 I haven’t tested this code enough so it might be buggy
   
-## Additional contributions from
-
-<https://github.com/tagrib>  
-<https://github.com/mgostIH>  
-<https://github.com/bobbyiscool123>  
-
 ## You can join our Discord Server
 
 <https://discord.com/channels/1366902833999511602/1366902833999511606>  
