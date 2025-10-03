@@ -122,7 +122,7 @@ def get_mode(shape, mode, execution_order, sequential_order, single_axis, axis_o
             axes = [min(single_axis, single_axis-len(shape))]
     return axes, mode, execution_order
 
-def __init__(shape: list|tuple|Iterable, # shape of the input, must be a list of integers, doesn't include the batch size
+def MNN(shape: list|tuple|Iterable, # shape of the input, must be a list of integers, doesn't include the batch size
         backend: str, 
         mode :str|list[str]='separate', 
         execution_order :str='parallel', 
