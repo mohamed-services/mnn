@@ -3,7 +3,7 @@ import numpy as np
 import os
 import tensorflow as tf
 import keras
-from layer import MNN  # type: ignore
+from mnn.layer import MNN # type: ignore
 
 path = 'D:/mnn/model/weights/'
 w = []
