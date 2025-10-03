@@ -1,11 +1,9 @@
 
 import numpy as np
-import string
 import os
-import itertools
 import tensorflow as tf
 import keras
-from mnn.layer import MNN  # type: ignore
+from layer import MNN  # type: ignore
 
 path = 'D:/mnn/model/weights/'
 w = []
@@ -20,9 +18,9 @@ layer = MNN(shape, 'tf')(inputs)
 
 model = keras.Model(inputs, layer)
 
-model.compile(keras.optimizers.SGD(2**-2), 'mse')
-
 model.set_weights(w)
+
+model.compile(keras.optimizers.SGD(2**-2), 'mse')
 
 model.summary()
 
