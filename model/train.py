@@ -32,7 +32,7 @@ model.summary()
 def binary(size):
     return np.array([[int(j) for j in bin(i)[2:].zfill(size)] for i in range(2**size)])
 
-size = 4
+size = 8
 x = binary(size) * 2 - 1
 x
 x.shape = [x.shape[0], *shape]
