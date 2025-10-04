@@ -17,6 +17,7 @@ inputs = keras.layers.Input(shape)
 layer = inputs
 mnn_layer = MNN(shape, 'tf')
 relu = keras.layers.ReLU()
+
 layer = mnn_layer(layer)
 layer = relu(layer)
 layer = mnn_layer(layer)
