@@ -24,16 +24,16 @@ layer = mnn_layer(layer)
 
 model = keras.Model(inputs, layer)
 
-model.set_weights(w)
-
 model.compile(keras.optimizers.SGD(2**-2), 'mse')
+
+model.set_weights(w)
 
 model.summary()
 
 def binary(size):
     return np.array([[int(j) for j in bin(i)[2:].zfill(size)] for i in range(2**size)])
 
-size = 8
+size = 16
 x = binary(size) * 2 - 1
 x
 x.shape = [x.shape[0], *shape]
