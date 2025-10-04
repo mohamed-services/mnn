@@ -288,7 +288,7 @@ def get_mode(shape, mode, execution_order, sequential_order, single_axis, axis_o
             axes = [min(single_axis, single_axis-len(shape))]
     return axes, mode, execution_order
 
-def __init__(shape: list|tuple|Iterable, # shape of the input, must be a list of integers, doesn't include the batch size
+def MNN(shape: list|tuple|Iterable, # shape of the input, must be a list of integers, doesn't include the batch size
         backend: str, 
         mode :str|list[str]='separate', 
         execution_order :str='parallel', 
@@ -333,68 +333,67 @@ def __init__(shape: list|tuple|Iterable, # shape of the input, must be a list of
 if 'tensorflow' in sys.modules and 'keras' in sys.modules:
     import tensorflow as tf
     import keras
-
-class MNN_tf(keras.layers.Layer):
-    def __init__(self, shape, mode :str|list[str]='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None=None, axis_output :int|None=None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, weights=None, **kwargs):
-        super().__init__(**kwargs)
-        self.shape = shape # shape of the input, must be a list of integers, doesn't include the batch size
-        self.execution = execution.lower()
-        if self.execution not in ['parallel', 'sequential', 'single']:
-            raise ValueError('execution value must be parallel or sequential or single')
-        if weights:
-            self.w = weights
-            return
-        if self.execution == 'single':
-            if single_axis is None or axis_output is None or single_axis >= len(shape) or single_axis < -len(shape):
-                raise ValueError('single_axis and axis_output must be provided and valid')
-        if type(mode) == str:
-            mode = [mode.lower() for i in shape]
-        elif len(mode) == 1:
-            mode = [mode[0].lower() for i in shape]
-        if len(mode) != len(shape):
-            raise ValueError(f"Length of mode list ({len(mode)}) must match length of shape ({len(self.shape)}).")
-        if sequential_order.lower() == 'ascending':
-            axes = range(-len(self.shape),0) 
-        elif sequential_order.lower() == 'descending':
-            axes = reversed(range(-len(self.shape),0))
-        else:
-            raise ValueError('sequential_order value must be ascending or descending')
-        if self.execution == 'single':
-            axes = [min(single_axis, single_axis-len(shape))]
-        self.w = {}
-        for axis in axes:
-            if mode[axis] == 'shared':
-                in_shape = [shape[axis]]
-            elif mode[axis] == 'separate':
-                in_shape = list(shape)
-            else:
-                raise ValueError('mode value invalid, valid mode values are shared or separate or mixture list of both')
+    class MNN_tf(keras.layers.Layer):
+        def __init__(self, shape, mode :str|list[str]='separate', execution :str='parallel', sequential_order: str='ascending', single_axis :int|None=None, axis_output :int|None=None, kernel_initializer=None, kernel_regularizer=None, kernel_constraint=None, weights=None, **kwargs):
+            super().__init__(**kwargs)
+            self.shape = shape # shape of the input, must be a list of integers, doesn't include the batch size
+            self.execution = execution.lower()
+            if self.execution not in ['parallel', 'sequential', 'single']:
+                raise ValueError('execution value must be parallel or sequential or single')
+            if weights:
+                self.w = weights
+                return
             if self.execution == 'single':
-                self.w[axis] = self.add_weight(shape=in_shape+[axis_output], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
-                break
-            self.w[axis] = self.add_weight(shape=in_shape+[shape[axis]], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
-    def axis_call(self, x, w, axis):
-        equation_x = string.ascii_letters[:len(x.shape)]
-        if len(w.shape) == 2: #shared
-            equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
-        else: #separate
-            equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
-        equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
-        equation = equation_x + ',' + equation_w + '->' + equation_o
-        #print(equation)
-        return tf.einsum(equation, x, w)
-    def call(self, x):
-        if self.execution == 'parallel':
-            sub_layer = []
-            for axis in self.w:
-                sub_layer.append(self.axis_call(x, self.w[axis], axis))
-            x = sum(sub_layer)
-        elif self.execution == 'sequential' or self.execution == 'single':
-            for axis in self.w:
-                x = self.axis_call(x, self.w[axis], axis)
-        else:
-            raise ValueError('execution value must be parallel or sequential or single')
-        return x
+                if single_axis is None or axis_output is None or single_axis >= len(shape) or single_axis < -len(shape):
+                    raise ValueError('single_axis and axis_output must be provided and valid')
+            if type(mode) == str:
+                mode = [mode.lower() for i in shape]
+            elif len(mode) == 1:
+                mode = [mode[0].lower() for i in shape]
+            if len(mode) != len(shape):
+                raise ValueError(f"Length of mode list ({len(mode)}) must match length of shape ({len(self.shape)}).")
+            if sequential_order.lower() == 'ascending':
+                axes = range(-len(self.shape),0) 
+            elif sequential_order.lower() == 'descending':
+                axes = reversed(range(-len(self.shape),0))
+            else:
+                raise ValueError('sequential_order value must be ascending or descending')
+            if self.execution == 'single':
+                axes = [min(single_axis, single_axis-len(shape))]
+            self.w = {}
+            for axis in axes:
+                if mode[axis] == 'shared':
+                    in_shape = [shape[axis]]
+                elif mode[axis] == 'separate':
+                    in_shape = list(shape)
+                else:
+                    raise ValueError('mode value invalid, valid mode values are shared or separate or mixture list of both')
+                if self.execution == 'single':
+                    self.w[axis] = self.add_weight(shape=in_shape+[axis_output], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
+                    break
+                self.w[axis] = self.add_weight(shape=in_shape+[shape[axis]], initializer=kernel_initializer, regularizer=kernel_regularizer, constraint=kernel_constraint)
+        def axis_call(self, x, w, axis):
+            equation_x = string.ascii_letters[:len(x.shape)]
+            if len(w.shape) == 2: #shared
+                equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
+            else: #separate
+                equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
+            equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
+            equation = equation_x + ',' + equation_w + '->' + equation_o
+            #print(equation)
+            return tf.einsum(equation, x, w)
+        def call(self, x):
+            if self.execution == 'parallel':
+                sub_layer = []
+                for axis in self.w:
+                    sub_layer.append(self.axis_call(x, self.w[axis], axis))
+                x = sum(sub_layer)
+            elif self.execution == 'sequential' or self.execution == 'single':
+                for axis in self.w:
+                    x = self.axis_call(x, self.w[axis], axis)
+            else:
+                raise ValueError('execution value must be parallel or sequential or single')
+            return x
 
 
 # torch implementation
@@ -402,53 +401,52 @@ class MNN_tf(keras.layers.Layer):
 # you must import the backend before importing this module
 if 'torch' in sys.modules:
     import torch
-
-class MNN_torch(torch.nn.Module):
-    def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
-        super().__init__()
-        self.shape = shape
-        self.execution = execution.lower()
-        if self.execution not in ['parallel', 'sequential']:
-            raise ValueError('execution value must be parallel or sequential')
-        self.sequential_order = sequential_order.lower()
-        if type(view) == str:
-            view = [view.lower() for i in shape]
-        elif len(view) == 1:
-            view = [view[0].lower() for i in shape]
-        self.w = {}
-        for axis in range(-len(self.shape),0):
-            if view[axis] == 'shared':
-                in_shape = [shape[axis]]
-            elif view[axis] == 'separate':
-                in_shape = list(shape)
-            else:
-                raise ValueError('view value missing or invalid, valid view values shared or separate')
-            param = torch.nn.Parameter(torch.empty(in_shape+[shape[axis]]))
-            torch.nn.init.xavier_uniform_(param)
-            param_name = f'weight_{axis}'
-            self.register_parameter(param_name, param)
-            self.w[axis] = param
-    def axis_call(self, x, w, axis):
-        equation_x = string.ascii_letters[:len(x.shape)]
-        if len(w.shape) == 2: #shared
-            equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
-        else: #separate
-            equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
-        equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
-        equation = equation_x + ',' + equation_w + '->' + equation_o
-        #print(equation)
-        return torch.einsum(equation, x, w)
-    def forward(self, x):
-        if self.execution == 'parallel':
-            sub_layer = []
-            for axis in self.w:
-                sub_layer.append(self.axis_call(x, self.w[axis], axis))
-            x = sum(sub_layer)
-        elif self.execution == 'sequential':
-            order = self.w if self.sequential_order == 'ascending' else reversed(self.w)
-            for axis in order:
-                x = self.axis_call(x, self.w[axis], axis)
-        return x
+    class MNN_torch(torch.nn.Module):
+        def __init__(self, shape, view, execution='parallel', sequential_order: str='ascending', **kwargs):
+            super().__init__()
+            self.shape = shape
+            self.execution = execution.lower()
+            if self.execution not in ['parallel', 'sequential']:
+                raise ValueError('execution value must be parallel or sequential')
+            self.sequential_order = sequential_order.lower()
+            if type(view) == str:
+                view = [view.lower() for i in shape]
+            elif len(view) == 1:
+                view = [view[0].lower() for i in shape]
+            self.w = {}
+            for axis in range(-len(self.shape),0):
+                if view[axis] == 'shared':
+                    in_shape = [shape[axis]]
+                elif view[axis] == 'separate':
+                    in_shape = list(shape)
+                else:
+                    raise ValueError('view value missing or invalid, valid view values shared or separate')
+                param = torch.nn.Parameter(torch.empty(in_shape+[shape[axis]]))
+                torch.nn.init.xavier_uniform_(param)
+                param_name = f'weight_{axis}'
+                self.register_parameter(param_name, param)
+                self.w[axis] = param
+        def axis_call(self, x, w, axis):
+            equation_x = string.ascii_letters[:len(x.shape)]
+            if len(w.shape) == 2: #shared
+                equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
+            else: #separate
+                equation_w = equation_x[1-len(w.shape):] + string.ascii_letters[len(equation_x)]
+            equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
+            equation = equation_x + ',' + equation_w + '->' + equation_o
+            #print(equation)
+            return torch.einsum(equation, x, w)
+        def forward(self, x):
+            if self.execution == 'parallel':
+                sub_layer = []
+                for axis in self.w:
+                    sub_layer.append(self.axis_call(x, self.w[axis], axis))
+                x = sum(sub_layer)
+            elif self.execution == 'sequential':
+                order = self.w if self.sequential_order == 'ascending' else reversed(self.w)
+                for axis in order:
+                    x = self.axis_call(x, self.w[axis], axis)
+            return x
 
 
 # jax implementation
@@ -458,62 +456,60 @@ if 'jax' in sys.modules and 'flax' in sys.modules:
     import jax.numpy as jnp
     from flax import linen as nn
     from typing import Union, List
-
-class MNN_jax(nn.Module):
-    shape: tuple
-    view: Union[str, List[str]]
-    execution: str = 'parallel'
-    sequential_order: str = 'ascending'
-    kernel_init: nn.initializers.Initializer = nn.initializers.lecun_normal()
-    def setup(self):
-        # Process view configuration
-        if isinstance(self.view, str):
-            processed_view = [self.view.lower() for _ in self.shape]
-        elif len(self.view) == 1:
-            processed_view = [self.view[0].lower() for _ in self.shape]
-        else:
-            processed_view = [v.lower() for v in self.view]
-        # Validate configuration
-        if self.execution not in ['parallel', 'sequential']:
-            raise ValueError("Execution must be 'parallel' or 'sequential'")
-        if self.sequential_order not in ['ascending', 'descending']:
-            raise ValueError("Sequential order must be 'ascending' or 'descending'")
-        # Create parameters as attributes
-        self.axes = list(range(-len(self.shape), 0))
-        for axis in self.axes:
-            view_type = processed_view[axis]
-            if view_type == 'shared':
-                in_shape = (self.shape[axis],)
-            elif view_type == 'separate':
-                in_shape = self.shape
+    class MNN_jax(nn.Module):
+        shape: tuple
+        view: Union[str, List[str]]
+        execution: str = 'parallel'
+        sequential_order: str = 'ascending'
+        kernel_init: nn.initializers.Initializer = nn.initializers.lecun_normal()
+        def setup(self):
+            # Process view configuration
+            if isinstance(self.view, str):
+                processed_view = [self.view.lower() for _ in self.shape]
+            elif len(self.view) == 1:
+                processed_view = [self.view[0].lower() for _ in self.shape]
             else:
-                raise ValueError(f"Invalid view: {view_type}. Use 'shared' or 'separate'")
-            param_shape = in_shape + (self.shape[axis],)
-            setattr(self, f'w_{axis}', self.param(f'w_{axis}', self.kernel_init, param_shape))
-    def axis_call(self, x, w, axis):
-        equation_x = string.ascii_letters[:x.ndim]
-        if len(w.shape) == 2:  # shared weights
-            equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
-        else:  # separate weights
-            # Calculate starting index for equation_w
-            start_idx = x.ndim - len(w.shape) + 1
-            equation_w = equation_x[start_idx:] + string.ascii_letters[len(equation_x)]
-        equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
-        equation = f"{equation_x},{equation_w}->{equation_o}"
-        return jnp.einsum(equation, x, w)
-    def __call__(self, x):
-        # Collect parameters in order
-        params = [getattr(self, f'w_{axis}') for axis in self.axes]
-        if self.execution == 'parallel':
-            outputs = [self.axis_call(x, w, axis) for w, axis in zip(params, self.axes)]
-            return sum(outputs)
-        elif self.execution == 'sequential':
-            order = zip(params, self.axes)
-            if self.sequential_order == 'descending':
-                order = reversed(list(order))
-            for w, axis in order:
-                x = self.axis_call(x, w, axis)
-            return x
-
+                processed_view = [v.lower() for v in self.view]
+            # Validate configuration
+            if self.execution not in ['parallel', 'sequential']:
+                raise ValueError("Execution must be 'parallel' or 'sequential'")
+            if self.sequential_order not in ['ascending', 'descending']:
+                raise ValueError("Sequential order must be 'ascending' or 'descending'")
+            # Create parameters as attributes
+            self.axes = list(range(-len(self.shape), 0))
+            for axis in self.axes:
+                view_type = processed_view[axis]
+                if view_type == 'shared':
+                    in_shape = (self.shape[axis],)
+                elif view_type == 'separate':
+                    in_shape = self.shape
+                else:
+                    raise ValueError(f"Invalid view: {view_type}. Use 'shared' or 'separate'")
+                param_shape = in_shape + (self.shape[axis],)
+                setattr(self, f'w_{axis}', self.param(f'w_{axis}', self.kernel_init, param_shape))
+        def axis_call(self, x, w, axis):
+            equation_x = string.ascii_letters[:x.ndim]
+            if len(w.shape) == 2:  # shared weights
+                equation_w = equation_x[axis] + string.ascii_letters[len(equation_x)]
+            else:  # separate weights
+                # Calculate starting index for equation_w
+                start_idx = x.ndim - len(w.shape) + 1
+                equation_w = equation_x[start_idx:] + string.ascii_letters[len(equation_x)]
+            equation_o = equation_x.replace(equation_x[axis], equation_w[-1])
+            equation = f"{equation_x},{equation_w}->{equation_o}"
+            return jnp.einsum(equation, x, w)
+        def __call__(self, x):
+            # Collect parameters in order
+            params = [getattr(self, f'w_{axis}') for axis in self.axes]
+            if self.execution == 'parallel':
+                outputs = [self.axis_call(x, w, axis) for w, axis in zip(params, self.axes)]
+                return sum(outputs)
+            elif self.execution == 'sequential':
+                order = zip(params, self.axes)
+                if self.sequential_order == 'descending':
+                    order = reversed(list(order))
+                for w, axis in order:
+                    x = self.axis_call(x, w, axis)
+                return x
 
 ~~~
