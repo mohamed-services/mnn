@@ -40,7 +40,7 @@ size = 8
 x = binary(size) 
 x = x * 2 - 1
 x = np.pad(x, [[0,0],[0,np.prod(shape)-size]])
-x = np.concatenate([np.roll(x, i, axis=1) for i in range(16, np.prod(shape), 8)], axis=0)
+x = np.concatenate([np.roll(x, i, axis=1) for i in range(64, np.prod(shape), 8)], axis=0)
 x.shape = [x.shape[0], *shape]
 x.shape
 
