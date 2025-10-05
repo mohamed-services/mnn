@@ -21,7 +21,7 @@ layer = inputs
 mnn_layer = MNN(shape, backend='tf', weights=weights)
 relu = keras.layers.ReLU()
 
-for i in range(1):
+for i in range(7):
     layer = mnn_layer(layer)
     layer = relu(layer)
 
@@ -39,8 +39,8 @@ def binary(size):
 size = 8
 x = binary(size) 
 x = x * 2 - 1
-x = np.pad(x, [[0,0],[0,24]])
-x = np.concatenate([np.roll(x, i*8, axis=1) for i in range(4)], axis=0)
+x = np.pad(x, [[0,0],[0,np.prod(shape)-size]])
+x = np.concatenate([np.roll(x, i, axis=1) for i in range(16, np.prod(shape), 8)], axis=0)
 x.shape = [x.shape[0], *shape]
 x.shape
 
