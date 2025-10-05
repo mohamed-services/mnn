@@ -5,42 +5,48 @@ import tensorflow as tf
 import keras
 from mnn.layer import MNN # type: ignore
 
+dims = 4
 path = 'D:/mnn/model/weights/'
 w = []
-for i in range(len(os.listdir(path))):
-    w.append(np.load(path+f'axis_{i}.npy').astype(np.float32))
+for i in range(dims):
+    w.append(np.load(path+f'axis_{i}.npy'))
 
+axes = list(range(-dims,0)) 
 shape = [i.shape[-1] for i in w]
 shape
+weights = {axes[i]:w[i] for i in range(dims)}
 
 inputs = keras.layers.Input(shape)
 layer = inputs
-mnn_layer = MNN(shape, 'tf')
+mnn_layer = MNN(shape, backend='tf', weights=weights)
 relu = keras.layers.ReLU()
 
-layer = mnn_layer(layer)
-layer = relu(layer)
+for i in range(1):
+    layer = mnn_layer(layer)
+    layer = relu(layer)
+
 layer = mnn_layer(layer)
 
 model = keras.Model(inputs, layer)
 
-model.compile(keras.optimizers.SGD(2**-2), 'mse')
-
-model.set_weights(w)
+model.compile('adam', 'mse')
 
 model.summary()
 
 def binary(size):
     return np.array([[int(j) for j in bin(i)[2:].zfill(size)] for i in range(2**size)])
 
-size = 16
-x = binary(size) * 2 - 1
-x
+size = 8
+x = binary(size) 
+x = x * 2 - 1
+x = np.pad(x, [[0,0],[0,24]])
+x = np.concatenate([np.roll(x, i*8, axis=1) for i in range(4)], axis=0)
 x.shape = [x.shape[0], *shape]
+x.shape
 
 model.evaluate(x, x)
 
-model.fit(x,x, epochs=2**16)
+model.fit(x, x, batch_size=x.shape[0], epochs=2**16)
 
 '''
 w = model.get_weights()
