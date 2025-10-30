@@ -38,7 +38,7 @@ def err_max(y_true, y_pred):
 def err_sum(y_true, y_pred):
     return tf.reduce_sum(tf.abs(tf.cast(y_true, dtype=tf.float32) - y_pred))
 
-model.compile(keras.optimizers.Adam(weight_decay=2**-8), 'mse', metrics=[err_sum, err_max])
+model.compile(keras.optimizers.Adam(), 'mse', metrics=[err_sum, err_max])
 #model.compile(keras.optimizers.SGD(learning_rate=2.0**-1), 'mse', metrics=[err])
 
 model.summary()
