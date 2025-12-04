@@ -8,11 +8,10 @@ This is an open source paper so anyone is more than welcome to clone it, improve
   
 ## Introduction
 
-I feel that I need to introduce myself to clear the motivation and to set some expectations, programming and machine learning was a little hobby of mine but I gave up on this hobby some years ago, and I’m trying to get back to it right now because I need an AI model to be my assistant and the large companies don't provide what I exactly need, there were a lot of advancements in the field in the past few years so I'm trying to catch up.  
-The purpose of this paper is not to prove point/s nor to introduce some new discovery/ies, the purpose of this paper is to help you create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is and get similar results to some of the popular models.  
-I know that there’re some open source LLM models on the web but most of the open source models that can be downloaded and run locally is very inefficient in regards to the resources usage and non of them is general purpose and we need a general purpose model not just an LLM, we need a model that can handle multiple modalities at the same time like text, audio, and video and has multiples modes like autoregressive and diffusion and can alternate between factual, creative, and reasoning easily and can use tools and surf the web and to be able to act as a human employee or a human assistant so it needs to be able to run continuously for many hours, days, weeks, and months, which is not possible using current architucures like trasnformers so I have to create a new architucure and model for myself and with plenty of time with nothing to do, I decided to document and to share the process with you while working on this project.  
-So to start we need first a good architecture.
-Usually training such a model takes millions if not billions of dollars in resources, So reducing the costs like a thousand fold to be able to accomplish it using a PC is not an easy task, I know that I need to move from dynamical architectures like transformers to a fixed architecture like MLP with dynamical resources assignment inspired by the biological brains, and from two dimensions to higher dimensions, and from full training to partial training and blind training, and from finetuning to identity embedding, and maybe all of this will not be enough, I know that every step in the process needs to be optimized or completely changed to achieve that, and there’re a lot of things to work on and it will take a long time, but I know that eventually we will get the wanted results.  
+The purpose of this paper is not to prove point/s nor to introduce some new discovery, the purpose of this paper is to help create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is and get similar results to some of the popular models.  
+It shouldn't take a whole data center to train an LLM, it should be possible to train an LLM on a single GPU.  
+It needs to be able to run continuously for many hours, days, weeks, and months, which is not possible using current architucures like trasnformer.  
+So to start we need first a good architecture.  
 Also be cautious about any mathematical calculation, code snippet or any unproved claim in this paper, as maybe further verification is needed.
   
 ## Multidimensionality
@@ -22,6 +21,13 @@ The transformer models decrease this problem by reshaping the flat inputs like t
 The transformer model can process the inputs in multidimensional space, for example if you have input sample of ten thousand words and embedding of size 64 usually you can run the attention mechanism on the first axis of size 10,000 and then you will run the feedforward layer on the second axis of 64, or you can reshape this sample to be (100, 100, 64) and run the attention mechanism on the first axis of size 100 then run the attention mechanism on the second axis of size 100 and then run the feedforward layer on the third axis of size 64, another example if you have an input of size one million words then you can run the attention mechanism on the first axis of size 1,000,000 and run the feedforward layer on the second axis of size 64, or you can reshape it to (100, 100, 100, 64) and then run the attention mechanism of size 100 on the first axis then run it on the second axis of size 100 then run it on the third axis of size 100 then run the feedforward layer on the fourth axis of size 64, I’ll not use the attention mechanism in my model, I’m mentioning it just in case you want to use it,
 You can implement multidimensional layers using attention layers or convolutional layers, or locally connected layers or feedforward layers or many other options.
   
+## True meaning of multidimensionality
+
+For attention mechanism from 1d to 2d  
+1d means 1 million squeared in one step equals 1 trillion oprations  
+2d means 2 one thousand squared in two steps equals 4 million operations  
+250 X reduction by going one step further  
+
 ## Feedforward neural networks
 
 Feedforward layers, is a static or fixed size type of layers where you must decide the input size and the output size of the layer before creating it, which is different from the dynamic range that the attention mechanism gives us, theoretically you can give the transformer model an insanely large input in size and it will compute it and return you the output, but realistically most LLM platforms and transformer models out there have limits to the input size that you can feed to the model and the output size that you can get from the model, right now most of the models have limited context window that’s less than one million words, and some below hundred thousand words,  and as soon as you decide the maximum size for your model whatever it is, then the attention mechanism isn't needed anymore and you can just use feedforward layer instead of it and zero pad your inputs to the needed size, so instead of using the attention mechanism on the first axis and the feedforward layer on the second axis, you can just use feedforward layer on the first axis and another feedforward layer on the second axis and you will get the same outputs, also you can make the feedforward layer sparse or more dynamic by deciding how many nodes you want to be used for any specific input out of the total number of nodes in that layer based on input size or the task difficulty,
@@ -40,6 +46,41 @@ The multidimensional layers give you the freedom to resize the layers shape what
 
 Note that the biases are not accounted for in the above calculations because if you will use an embedding layer as an input layer then using the biases is optional inside the hidden layers, but you’re free to use biases in your model,
   
+## Mixture of experts
+
+The attention mechanism itself isn't needed because you can use a mixture of experts instead of it to route the data between the tokens also you can choose the size of the 2d matrix from n by 2 to n by (n-1) then you can just sum all the data along the second dimension, Also you can use the mixture of experts on a higher dimensions.
+Also you can use the attention mechanism on higher dimensions.
+You can also use multi-agents or mult-heads where every agent or every head process a part of the input or a part of the output and they are communicating using addressess so every agent can decide which agents it wants to send data to and which agents it wants to ask data from.
+So agents works like workers in a factory where every worker do his part.
+And they are rewarded for distributing work and loads equaly and for being cooperative.
+The addressing system:
+1D (all agents will be on a line or a circle).
+Modular (address 13 for network of size 5 will be 13 mod 5 so thd real address will be 3).
+Binary (addresses will be an n bit binary positions for example 32 bit so the agents can address each other efficiently and accurately).
+Signed (address can positive 9 or negative 9, like 9 move to the right or 9 moves to the left relative to the current position).
+Relative or absolute (we can use relative or absolute positioning).
+Agents talk every few time steps.
+Mixture of experts architecture can be used or should be used.
+Some agents can act as an input layers, some agents can act as a hidden layers, and some agents can act as an output layers.
+Experts can have different numbers of dimensions for example two, three, or four as soon as tolens size is smaller than input/output maximum size so the expert can reshape the data to its number of dimensions.
+The first n bits will be used to address other agents for example the first 1024 bits will be used to address another 32 agents.
+A subset of the agents can be grouped in a small pool to work on a smaller task.
+True mixture of experts architecture.
+Federated machine learning where any one or any company can train their private agent and integrate it with publicly available agents or experts.
+True Mixture of experts architecture
+No attention needed As it turns out that attention is not necessary in large language models.
+Can we use a central memory for coordinating something like RAG where every agent outputs a small vector
+And after that nearest neighbors algorithm will be used to to determine the set of inputs that will be used for the next time step.
+Make every expert output two vectors the first to be its axon central location and the other to be its dendrites central location and this cordinates can be 3d or 4d or 8d cordinates.
+Also agents can choose the radius that they want the nearest neighbors to be viewed.
+Make the current weights of similar size like 8,8,8,8 and group them in one numpy file to be a single expert.
+The system can be asynchronous so every agent can read or write on his own speed for example an agent can run for five steps then read or write and another agen can for eight steps then read or write.
+RAG memories are inherently builtin in the system so a memory can live as an input or output without changing.
+The agent can output floating point based cordinates or text based cordinates.
+agents can be mnn or conv or rnn or transformers.
+You can convert convert the distance between the cell and its neighbours into weights where's a lower distance means a higher weight.
+w = 1 - current_distance / sum(all distances)
+
 ## Activation function
 
 The following activation functions are the candidates for the mnn model  
@@ -49,7 +90,6 @@ hardtanh: hardtanh(x) = clip(x, -1, 1). recomended if you will quantize your mod
 elu: elu(x) = x if x >= 0 else exp(x) - 1  
 melu: melu(x) = x*exp(min(x,0)). melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks as it have better data flow compared to gelu, silu, and mish  
 sort2: sort2(x) = reshape(x, [-1, 2]); sort(x, axis=-1); reshape(x, original_shape)  
-
 Some models may perform better with a partial activation instead of full activation, I think you should give it a try, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter as linear as it is, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,
   
 ## Connectivity
@@ -80,7 +120,7 @@ Why you may need a model that can handle context window with billions of tokens 
   
 ## Model identity
 
-We will not use model fine-tuning to convert the model to a chatbot instead we will use prompt fine-tuning where the model weights will be frozen and the training goal is to get a learned system prompt or prefix values that makes this model output this response to this inquiry,  
+We will not use model fine-tuning to convert the model to a chatbot instead we will use prompt fine-tuning where the model weights will be frozen and the training goal is to get a learned system prompt or prefix values that makes this model output this response to this inquiry, so the model name itself will be learned,  
 And this will allow us to continue the training process on general content as much as we want, and will just use the learned system prompt before the user prompt,  
 
 ## Sparsity
@@ -96,35 +136,55 @@ Also we can implement reasoning and thinking by giving the model various time st
 
 ## Recursion
 
-</br>
+The model is recursive neural network not recurrent neural network.
 
 ## Read & Write
 
-</br>
+The model can read the inputs in multiple time steps like batchs or can read all the inputs at once, also the model can write the outputs as batchs or all at once.
+Also the model is interactive which means you can give it inputs and get outputs from it then give it more inputs.
 
 ## Partial training
 
-</br>
+Training the model with limited backpropagation through time by only tracing the gradients back trhough time to a number of time steps smaller than the total number of the time steps.
 
-## Blind training
+## Zeroth and first order training
 
-</br>
+Zeroth order is training the model without backpropagation using random gradients.
 
 ## Self distillation
 
-</br>
+Self distillation is running the model for long steps to an outputs then train the model to produce those outputs with lower number of steps.
 
-## General intelligence score with human evaluation
+## Training methods
 
-</br>
+An autoencoder style training will be used.  
+Which means no next word prediction instead the model will learn to compress the input and recover missing data or denoise the data that was noised from the other samples.  
+And training methods will be.  
+One input to one output.  
+One input to many outputs.  
+Many inputs to one output.  
+Many inputs to many outputs.  
 
-## General intelligence score with auto evaluation
+## Training data
 
-</br>
+No human labels will be used in the pretraining of the model, only raw unsupervised learning and reinforcement learning.  
+Supervised learning will be only used in the prompt fine-tuning.
+
+## Video processing
+
+Vedio proccessing using multidimensional attention and i frames and epsoides
+
+## Lossy weights compresion
+
+Algorithms like DCT, quantization and run length encoding can be used to compress the model weights.
+
+## General intelligence score
+
+The model should be tested againest data that it can't reach via interpolation or extrapolation.  
 
 ## Implementation
 
-I'll create two models using two different training techniques:  
+I'll create two models:  
 Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in  
 <https://github.com/mohamed-services/mnn/tree/main/model>  
 Experimental model and it will be mostly closed source and for experimentation purposes.  
