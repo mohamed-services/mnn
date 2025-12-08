@@ -89,9 +89,32 @@ relu: pros (simple to compute, sparse, recommended overall) cons (sharp, dying n
 leakyrelu: leakyrelu(x) = max(x, 0.25*x)\
 hardtanh: hardtanh(x) = clip(x, -1, 1). recomended if you will quantize your model and will use fixed point arithmetic as it more compatible with a Fixed-point arithmetic by making the minimum and the maximum limit of the datatype the same as the activation function for example an 8 bit datatype will have 256 values from approximatly negative one to approximatly positive one and any lower or higher value will be clipped naturally by the datatype\
 elu: elu(x) = x if x >= 0 else exp(x) - 1\
-melu: melu(x) = x*exp(min(x,0)). melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks as it have better data flow compared to gelu, silu, and mish\
+melu: melu(x) = x*exp(min(x,0)). melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks as it have better gradients flow compared to gelu, silu, and mish\
 sort2: sort2(x) = reshape(x, [-1, 2]); sort(x, axis=-1); reshape(x, original_shape)\
 Some models may perform better with a partial activation instead of full activation, I think you should give it a try, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter as linear as it is, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,\
+
+## Selective relu gradients
+
+Solving the dying relu problem\
+If the relu output > 0:\
+   Apply the gradients to the layer weights\
+If the relu output == 0:\
+  If gradient is Negative: Apply a small fraction of the gradients to the layer weights (Allow the neuron to climb back up to 0).\
+  If gradient is Positive: Block it (Prevent the neuron from being pushed further down).\
+Return the normal unmodified relu gradients to the preceding layers or steps to avoid unstablizing them by the fake gradients.\
+
+## Backpropagation through time
+
+We can use backpropagation through time without storing all the intermediate values in memory by using leaky relu and making sure that the weights matrix is Invertible\
+Recommended values for leaky relu alpha are (0.125 , 0.25 , 0.5)\
+In the backwards pass\
+We reverse the leaky relu by multiplying the negative outputs with (1/alpha) to get the activation function inputs.\
+Then we matrix multiply the linear layer outputs with the inverse of the weights to get the layer inputs.\
+And so on step by step back in time.\
+You need to store the intermediate values every 16 or 32 time steps to accommodate for the accumulated floating point errors.\\
+You can do the same with any monotonic activation function like elu.\
+You can also do the same with the abs activation function but you need to store the sign of the values in every intermediate step.\
+Also you can do the same with the sort activation function but you need to store the original order of the values.\
 
 ## Connectivity
 
@@ -220,5 +243,3 @@ You can email me on my personal email <mohamed.sourcing@gmail.com>
 
 [1] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin. Attention Is All You Need <https://arxiv.org/abs/1706.03762>\
 [2] Ilya Tolstikhin, Neil Houlsby, Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, Thomas Unterthiner, Jessica Yung, Andreas Steiner, Daniel Keysers, Jakob Uszkoreit, Mario Lucic, Alexey Dosovitskiy. MLP-Mixer: An all-MLP Architecture for Vision <https://arxiv.org/abs/2105.01601>\
-[3] Shikai Qiu, Andres Potapczynski, Marc Finzi, Micah Goldblum, Andrew Gordon Wilson. Compute Better Spent: Replacing Dense Layers with Structured Matrices <https://arxiv.org/abs/2406.06248>\
-[4] Andres Potapczynski, Shikai Qiu, Marc Finzi, Christopher Ferri, Zixi Chen, Micah Goldblum, Bayan Bruss, Christopher De Sa, Andrew Gordon Wilson. Searching for Efficient Linear Layers over a Continuous Space of Structured Matrices <https://arxiv.org/abs/2410.02117>\
