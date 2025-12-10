@@ -9,8 +9,8 @@ This is an open source paper so anyone is more than welcome to clone it, improve
 ## Introduction
 
 The purpose of this paper is not to prove point/s nor to introduce some new discovery, the purpose of this paper is to help create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is and get similar results to some of the popular models.\
-It shouldn't take a whole data center to train an LLM, it should be possible to train an LLM on a single GPU.\
 It needs to be able to run continuously for many hours, days, weeks, and months, which is not possible using current architucures like trasnformer.\
+It shouldn't take a whole data center to train an LLM, it should be possible to train an LLM on a single GPU.\
 So to start we need first a good architecture.\
 Also be cautious about any mathematical calculation, code snippet or any unproved claim in this paper, as maybe further verification is needed.\
 
