@@ -205,6 +205,7 @@ Many inputs to many outputs.\
 
 No human labels will be used in the pretraining of the model, only raw unsupervised learning and reinforcement learning.\
 Supervised learning will be only used in the prompt fine-tuning.\
+Only open source data will be used in the model training\
 
 ## Video processing
 
