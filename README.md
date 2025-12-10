@@ -222,10 +222,10 @@ The model should be tested againest data that it can't reach via interpolation o
 
 I'll create two models:\
 Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in\
-<https://github.com/mohamed-services/mnn/tree/main/model>\
+[Model Directory](/model)\
 Experimental model and it will be mostly closed source and for experimentation purposes.\\
 Multidimensional layer implementation\
-<https://github.com/mohamed-services/mnn/blob/main/layer.py>\
+[Layer Implementation](/layer.py)\
 you are not bounded by this implementation, you can implement the multidimensional layer however you want based on your requirements, and decide what parameters to be shared and what to stay separate,\
 you can use multiple multidimensional layers in parallel like multi heads\
 you can stack multiple multidimensional layers for a deeper network\
