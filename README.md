@@ -115,6 +115,8 @@ You need to store the intermediate values every 16 or 32 time steps to accommoda
 You can do the same with any monotonic activation function like elu.\
 You can also do the same with the abs activation function but you need to store the sign of the values in every intermediate step.\
 Also you can do the same with the sort activation function but you need to store the original order of the values.\
+You can backprop sort2 activation through time by storing the order of every two outputs using one bit and bundle every eight bits in one byte, so you compress the size of the intermediate values by one over sixty four.\
+You can do the same with abs activation function but the compression rate would be one over thirty two.\
 
 ## Connectivity
 
