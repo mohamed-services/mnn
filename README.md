@@ -236,7 +236,7 @@ I haven’t tested this code enough so it might be buggy\
 
 ## You can join our Discord Server
 
-<https://discord.com/channels/1366902833999511602/1366902833999511606>
+[Discord](https://discord.com/channels/1366902833999511602/1366902833999511606)
 
 ## In the end
 
