@@ -135,8 +135,17 @@ you're free to design the network the way you want by choosing how many dimensio
 
 ## Tokenization
 
-I'll use bit based tokenization for all modalities, So every token will equal one bit of two binary values negative one and psoitive one, So the UTF8 text may take from 8 to 32 bits, Images signals will take 24 bits, Audio signals will take 16 bits,\
-I'll not use any embedding nor unembedding layers and the model will handle the inputs and outputs binary values directly, Not using embedding and unembedding layers isn't the recommended way for the tokenization but it's more suitable for my constrained hardware,\
+I'll use byte based tokenization for all text modality.\
+We will have three types of data:\
+1. Binary data.\
+2. Discrete data like text and will Use embedding of size 16 for every 256 discrete values.\
+3. Signal or continuous data like pixel colors intensities and audio waves amplitudes.\
+Text data like characters can processed via embedding and reverse embedding layer.\
+As soon as the embedding size is 256 or below then you're winning performance against the word embedding style.\
+Image data like color channels can be represented via continuous floating point values between negative one and one. And the three colors channels can be represented using three values or more.\
+You can have multiple embedding layers for the same modality and you can choose between them like mixture of experts.\
+The input embedding and the network outputs must be the same, in other words you must use the same layer weights for embedding and unembedding.\
+You will need a way for the model to tell you the position and the modality of every sector or token.\
 
 ## Padding
 
