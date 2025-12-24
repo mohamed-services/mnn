@@ -81,6 +81,9 @@ agents can be mnn or conv or rnn or transformers.\
 You can convert convert the distance between the cell and its neighbours into weights where's a lower distance means a higher weight.\
 w = 1 - current_distance / sum(all distances)\
 Any head can act as input head, hidden head, or output head.\
+
+## Nearest Neighbors
+
 Using the weighted k nearest neighbors algorithm \
 By calculating the distance between the heads coordinates to the current head coordinates and normalizing the values between zero and one and subtracting the normalized values from one then multiplying every input by its value or weight. By doing that we teach the networks if it wants to decrease the weight for an input from a head then it should increase the distance or the difference between the current head coordinates and that head coordinates and if it wants to increase the wight for that input then it should decrease the distance or the difference between the coordinates.\
 The k nearest neighbors algorithm is imbalanced which means that not all the heads or tokens will be represented equally or the same number of times which means that some tokens can be overrepresented or underrepresented or not represented at all. To fix this issue you can enforce that any token must be represented m number of times to its nearest neighbors even if it isn't in the top k nearest neighbors.\
