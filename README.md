@@ -87,7 +87,16 @@ Any head can act as input head, hidden head, or output head.\
 Using the weighted k nearest neighbors algorithm \
 By calculating the distance between the heads coordinates to the current head coordinates and normalizing the values between zero and one and subtracting the normalized values from one then multiplying every input by its value or weight. By doing that we teach the networks if it wants to decrease the weight for an input from a head then it should increase the distance or the difference between the current head coordinates and that head coordinates and if it wants to increase the wight for that input then it should decrease the distance or the difference between the coordinates.\
 The k nearest neighbors algorithm is imbalanced which means that not all the heads or tokens will be represented equally or the same number of times which means that some tokens can be overrepresented or underrepresented or not represented at all. To fix this issue you can enforce that any token must be represented m number of times to its nearest neighbors even if it isn't in the top k nearest neighbors.\
-Use 4d coordinates not 8d coordinates.\
+Add nearest neighbors attention to the paper.
+The head will generate the query and the key an the value.\
+The size of the queries and keys is four or eight values.\
+The model will use the k-nearest neighbors approximation to find the nearest keys to the current query.\
+Distance(abs(query - keys))\
+Normalize the distance \
+Invert the normalized distance \
+Multiply the inverted normalized distances with the selected values.\
+Standard Attention: "I am the query. I will look at all keys, calculate a similarity score for each, and take a weighted average of all values."\
+Nearest Neighbor Attention: "I am the query. I will find the top-$k$ keys that are closest to me in vector space, and I will only attend to those."\
 
 ## Activation function
 
