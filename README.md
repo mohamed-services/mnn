@@ -154,7 +154,7 @@ As soon as the embedding size is 256 or below then you're winning performance ag
 Image data like color channels can be represented via continuous floating point values between negative one and one. And the three colors channels can be represented using three values or more.\
 You can have multiple embedding layers for the same modality and you can choose between them like mixture of experts.\
 The input embedding and the network outputs must be the same, in other words you must use the same layer weights for embedding and unembedding.\
-You will need a way for the model to tell you the position and the modality of every sector or token.\
+Every token will be preceded by an 8 bit section for Positional Encoding and for determining the modality like text or image or sound or etc.\
 
 ## Padding
 
