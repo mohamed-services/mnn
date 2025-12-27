@@ -146,9 +146,9 @@ you're free to design the network the way you want by choosing how many dimensio
 
 I'll use byte based tokenization for all text modality.\
 We will have three types of data:\
-1. Binary data.\
-2. Discrete data like text and will Use embedding of size 16 for every 256 discrete values.\
-3. Signal or continuous data like pixel colors intensities and audio waves amplitudes.\
+Binary data.\
+Discrete data like text and will Use embedding of size 16 for every 256 discrete values.\
+Signal or continuous data like pixel colors intensities and audio waves amplitudes.\
 Text data like characters can processed via embedding and reverse embedding layer.\
 As soon as the embedding size is 256 or below then you're winning performance against the word embedding style.\
 Image data like color channels can be represented via continuous floating point values between negative one and one. And the three colors channels can be represented using three values or more.\
