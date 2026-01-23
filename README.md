@@ -1,4 +1,4 @@
-# Multidimensional neural networks
+# Mixture of experts
 
 Mohamed Ibrahim
 
