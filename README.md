@@ -8,11 +8,18 @@ This is an open source paper so anyone is more than welcome to clone it, improve
 
 ## Introduction
 
-The purpose of this paper is not to prove point/s nor to introduce some new discovery, the purpose of this paper is to help create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is and get similar results to some of the popular models.\
+The purpose of this paper is not to prove point/s nor to introduce some new discovery, the purpose of this paper is to help create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is and get similar results to some of the Frontier models.\
 It needs to be able to run continuously for many hours, days, weeks, and months, which is not possible using current architucures like trasnformer.\
 It shouldn't take a whole data center to train an LLM, it should be possible to train an LLM on a single GPU.\
 So to start we need first a good architecture.\
 Also be cautious about any mathematical calculation, code snippet or any unproved claim in this paper, as maybe further verification is needed.\
+
+## Modularity
+
+modularity meaning the ability to add or remove heads or experts withouting destroying the model.\
+every expert must get a trainable 3 linear layer as an attachment to convert data from the shared space representation to the expert representation, and another linear layer to convert the data from the expert representation to the shared space representation.\
+outputs = linear_2(expert(linear_1(inputs))) + linear_3(inputs)\
+This architecture will allow the usage experts or heads from different open-weights models from different sources without needing to retrain any of those experts by freezing the expert weights and just training the linear layers for that expert to be able to communicate with the shared space.\
 
 ## Multidimensionality
 
