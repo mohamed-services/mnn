@@ -16,8 +16,8 @@ Also be cautious about any mathematical calculation, code snippet or any unprove
 
 ## Modularity
 
-modularity meaning the ability to add or remove heads or experts withouting destroying the model.\
-every expert must get a trainable 3 linear layer as an attachment to convert data from the shared space representation to the expert representation, and another linear layer to convert the data from the expert representation to the shared space representation.\
+Modularity means the ability to add or remove heads or experts withouting destroying the model.\
+every expert must get a trainable 3 linear layer as an attachment to convert data from the shared space representation to the expert representation, and to convert the data from the expert representation to the shared space representation.\
 outputs = linear_2(expert(linear_1(inputs))) + linear_3(inputs)\
 This architecture will allow the usage experts or heads from different open-weights models from different sources without needing to retrain any of those experts by freezing the expert weights and just training the linear layers for that expert to be able to communicate with the shared space.\
 
