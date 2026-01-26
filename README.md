@@ -1,4 +1,4 @@
-# Modular Neural Network
+# Modular Neural Networks
 
 Mohamed Ibrahim
 
