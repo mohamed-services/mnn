@@ -1,4 +1,4 @@
-# Mixture of experts
+# Modular Neural Network
 
 Mohamed Ibrahim
 
