@@ -45,6 +45,13 @@ Multidimensional neural network, is like any ordinary feedforward neural network
 If we have one fully connected layer of one hundred neurons with input size of one hundred then this fully connected layer will have ten thousand connections (100^2), We can reduce the number of parameters while keeping this layer fully connected by reshaping the input from one dimension of one hundred to two dimensions of ten by ten and run ten different dense layers with ten neurons inside on each row and run another ten dense layers with ten neurons inside on each column and sum the two sets, then the number of the parameters will be (10^3)+(10^3) which is equal to 2,000 parameters but because we converted the 1d input to 2d then we need to run the sublayers on the two axes sequentially over two steps or we will need to stack two layers, because the maximum number of steps needed to move information from any point to any point using a straight line in a multidimensional array is equal to the number of dimensions so we need one step for 1d and two steps for 2d and three steps for 3d and so on,\
 And those numbers are for non-shared or spatially separate parameters, but if we will share the parameters inside every axis the number of parameters will be ((10^2) + (10^2)) = 200 shared parameters, also if all the axes are of the same size then we can share the parameters of one axis with all the axes and the number of parameters will be (10^2) = 100, and in general you can decide what parameters you want to be shared inside your model and how it will be shared between the neurons and what parameters you don’t want to be shared inside your model based on your requirements,\
 
+## Irregular shaped inputs and outputs
+
+Like a jagged or ragged data so the global mixing can be applied to some 1D vectors while other 1D vectors are ignored./
+So you can run global mixer on the first and third rows but not on all the rows.
+Also you can can run the global mixer on the second and the fourth colmuns but not on all colmuns.
+In summary for any n dimensional network you can divide the network to 1D vectors (slicing any dimension) and run the mixer on some vectors while ignoring other vectors.
+
 ## Layer resizing
 
 The multidimensional layers give you the freedom to resize the layers shape whatever you want by using a dense layer on the specific axis you want to resize, like how the feedforward layers allows you to get different output size than the input,\
