@@ -122,6 +122,12 @@ Multiply the inverted normalized distances with the selected values.\
 Standard Attention: "I am the query. I will look at all keys, calculate a similarity score for each, and take a weighted average of all values."\
 Nearest Neighbor Attention: "I am the query. I will find the top-$k$ keys that are closest to me in vector space, and I will only attend to those."\
 
+# Long term memory
+
+What we need in the mnn is a way to archive tokens if they aren't needed by any expert and to restore it if it was needed in any future step.\
+Note all the inputs tokens will have its traces in the hidden tokens.\
+A token will keep or persist its position but it will not be called unless some token or some expert decide to sample from that local location.\
+
 ## Activation function
 
 The following activation functions are the candidates for the mnn model\
