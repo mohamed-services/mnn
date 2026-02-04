@@ -224,6 +224,7 @@ The model is recursive neural network not recurrent neural network.\
 
 The model can read the inputs in multiple time steps like batchs or can read all the inputs at once, also the model can write the outputs as batchs or all at once.\
 Also the model is interactive which means you can give it inputs and get outputs from it then give it more inputs.\
+The model doesn't process data token by token instead it works on batchs of tokens in every step and the number of tokens in every step is variable not static.\
 
 ## Partial training
 
