@@ -16,10 +16,25 @@ Also be cautious about any mathematical calculation, code snippet or any unprove
 
 ## Modularity
 
-Modularity means the ability to add or remove heads or experts withouting destroying the model.\
-every expert must get a trainable 3 linear layer as an attachment to convert data from the shared space representation to the expert representation, and to convert the data from the expert representation to the shared space representation.\
-outputs = linear_2(expert(linear_1(inputs))) + linear_3(inputs)\
-This architecture will allow the usage experts or heads from different open-weights models from different sources without needing to retrain any of those experts by freezing the expert weights and just training the linear layers for that expert to be able to communicate with the shared space.\
+Modularity means the ability to add or remove heads or experts without destroying the model.\
+Every expert must get a 3 trainable linear layer as an attachment to convert data from the shared space representation to the expert representation, and to convert the data from the expert representation to the shared space representation.\
+Also global linear layers for the generating the queries and keys and for the router network.
+Query = Linear_query(inputs)\
+Key = Linear_key(inputs)\
+Value = distance(neareast_neigbours(query, key, inputs))\
+Note query and key sizes are smaller than the value size\
+output = linear_o(expert(linear_i(Value))) + linear_r(Value)\
+This architecture will allow the usage of experts from different open-weights models from different sources without needing to retrain any of those experts and that by freezing the expert weights and just training the linear layers for that expert to be able to communicate with the shared space.\
+The linear layers are intiated with identity matrices and trained during inference.\
+It would be much better to use non linear MLP layers but we will use linear layers in this project.\
+
+## routing
+
+A network to gather the inputs from different positions to be weighted and inputed to the correct expert.
+
+## Positioning
+
+A positioning network that will be used to send the experts outpots to the correct positions.
 
 ## Multidimensionality
 
@@ -111,6 +126,12 @@ Invert the normalized distance \
 Multiply the inverted normalized distances with the selected values.\
 Standard Attention: "I am the query. I will look at all keys, calculate a similarity score for each, and take a weighted average of all values."\
 Nearest Neighbor Attention: "I am the query. I will find the top-$k$ keys that are closest to me in vector space, and I will only attend to those."\
+
+# Long term memory
+
+What we need in the mnn is a way to archive tokens if they aren't needed by any expert and to restore it if it was needed in any future step.\
+Note all the inputs tokens will have its traces in the hidden tokens.\
+A token will keep or persist its position but it will not be called unless some token or some expert decide to sample from that local location.\
 
 ## Activation function
 
@@ -214,6 +235,7 @@ The model is recursive neural network not recurrent neural network.\
 
 The model can read the inputs in multiple time steps like batchs or can read all the inputs at once, also the model can write the outputs as batchs or all at once.\
 Also the model is interactive which means you can give it inputs and get outputs from it then give it more inputs.\
+The model doesn't process data token by token instead it works on batchs of tokens in every step and the number of tokens in every step is variable not static.\
 
 ## Partial training
 
