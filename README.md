@@ -17,7 +17,8 @@ Also be cautious about any mathematical calculation, code snippet or any unprove
 ## Modularity
 
 Modularity means the ability to add or remove heads or experts without destroying the model.\
-every expert must get a trainable 3 linear layer as an attachment to convert data from the shared space representation to the expert representation, and to convert the data from the expert representation to the shared space representation.\
+Every expert must get a 3 trainable linear layer as an attachment to convert data from the shared space representation to the expert representation, and to convert the data from the expert representation to the shared space representation.\
+Also global linear layers for the generating the queries and keys and for the router network.
 Query = Linear_query(inputs)\
 Key = Linear_key(inputs)\
 Value = distance(neareast_neigbours(query, key, inputs))\
