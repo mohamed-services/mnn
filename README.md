@@ -22,7 +22,7 @@ Query = Linear_query(inputs)\
 Key = Linear_key(inputs)\
 Value = distance(neareast_neigbours(query, key, inputs))\
 Note query and key sizes are smaller than the value size\
-output = linear_2(expert(linear_1(Value))) + linear_3(Value)\
+output = linear_o(expert(linear_i(Value))) + linear_r(Value)\
 This architecture will allow the usage of experts from different open-weights models from different sources without needing to retrain any of those experts and that by freezing the expert weights and just training the linear layers for that expert to be able to communicate with the shared space.\
 The linear layers are intiated with identity matrices and trained during inference.\
 It would be much better to use non linear MLP layers but we will use linear layers in this project.\
