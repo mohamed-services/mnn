@@ -192,6 +192,18 @@ You can have multiple embedding layers for the same modality and you can choose 
 The input embedding and the network outputs must be the same, in other words you must use the same layer weights for embedding and unembedding.\
 Every token will be preceded by an 8 bit section for Positional Encoding and for determining the modality like text or image or sound or etc.\
 
+## Token size
+
+We will use 1024 for the value size and 32 for the query and key sizes.
+
+## Asynchronous
+
+The system is truly asynchronous which means that the system don't care if token A was inputed before token B or token B was inputed before token A.
+
+## Next step generation
+
+The number of the hidden tokens in the new step is equal to the number of generated queries by the queries generation network.
+
 ## Padding
 
 Transformer models gives flexible context window, but the feedforward models needs fixed context window so we have to pad our inputs to a fixed size so the feedforward layers can process it, you can leave the beginning of your inputs and only pad the end of the inputs, but for me all the inputs will be padded with random number of zeros before it and the inputs will be zero padded after it till the end of the model input size so the position of the input will be random not in the beginning of the context window,\
