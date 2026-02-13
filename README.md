@@ -30,7 +30,7 @@ It would be much better to use non linear MLP layers but we will use linear laye
 
 ## routing
 
-A network to gather the inputs from different positions to be weighted and inputed to the correct expert.
+Instead of the router network in the mixture of experts you can make every expert output a signature using global trained input like a bias and local trained linear layers and generate this signaturs only once at the start of the run.\ and for every token you extract a special vector from it using linear layers and use nearest neighbors to find the nearest experts signatures, and run this token via the n experts with the nearest signatures and multiply the outputs by the distance.
 
 ## Positioning
 
