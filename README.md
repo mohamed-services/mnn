@@ -194,7 +194,8 @@ Every token will be preceded by an 8 bit section for Positional Encoding and for
 
 ## Token size
 
-We will use 1024 for the value size and 32 for the query and key sizes.
+We will use 1024 for the value size and 32 for the query and key sizes.\
+If the size of an output token is larger than 1024 like 4096 then it will be split into 4 tokens using linear transformation.
 
 ## Asynchronous
 
