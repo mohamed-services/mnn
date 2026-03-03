@@ -241,9 +241,7 @@ If the relu output > 0:
 
 If the relu output == 0:
 
-  If gradient is Negative: Apply a small fraction of the gradients to the layer weights (Allow the neuron to climb back up to 0).
-  
-  If gradient is Positive: Block it (Prevent the neuron from being pushed further down).
+  Apply a small fraction of the gradients to the layer weights for example (0.25 \* G) or exp(G).
   
 Return the normal unmodified relu gradients to the preceding layers or steps to avoid unstablizing them by the fake gradients.
 
