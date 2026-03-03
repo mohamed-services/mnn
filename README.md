@@ -217,7 +217,7 @@ The following activation functions are the candidates for the mnn model
 
 relu: pros (simple to compute, sparse, recommended overall) cons (sharp, dying nodes)
 
-leakyrelu: leakyrelu(x) = max(x, 0.25\*x)
+leakyrelu: leakyrelu(x) = max(0.75\*x, 0.25\*x)
 
 hardtanh: hardtanh(x) = clip(x, -1, 1). recomended if you will quantize your model and will use fixed point arithmetic as it more compatible with a Fixed-point arithmetic by making the minimum and the maximum limit of the datatype the same as the activation function for example an 8 bit datatype will have 256 values from approximatly negative one to approximatly positive one and any lower or higher value will be clipped naturally by the datatype
 
@@ -241,7 +241,7 @@ If the relu output > 0:
 
 If the relu output == 0:
 
-  Apply a small fraction of the gradients to the layer weights for example exp(G) or (0.125 \* G).
+  Apply a small fraction of the gradients to the layer weights for example exp(G) or (0.125\*G).
 
 Return the normal unmodified relu gradients to the preceding layers or steps to avoid unstablizing them by the fake gradients.
 
