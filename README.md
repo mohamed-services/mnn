@@ -229,7 +229,7 @@ sort2: sort2(x) = reshape(x, [-1, 2]); sort(x, axis=-1); reshape(x, original_sha
 
 modified norm: mnorm(x) = x \* abs(x / sqrt( sum( square(x), axis=-1, keepdims=True)))
 
-Some models may perform better with a partial activation instead of full activation, I think you should give it a try, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter as linear as it is, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,
+Some models may perform better with a partial activation instead of full activation, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter as linear as it is just normalize it, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,
 
 ## Selective relu gradients
 
