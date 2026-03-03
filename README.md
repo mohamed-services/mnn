@@ -207,6 +207,10 @@ Note all the inputs tokens will have its traces in the hidden tokens.
 
 A token will keep or persist its position but it will not be called unless some token or some expert decide to sample from that local location.
 
+## MLP fingerprint
+
+Every MLP or expert will have its fingerprint in the token, And you can train linear layers to make them include the MLP fingerprint in the produced token so the other MLPs can know which token was produced by which MLP.
+
 ## Activation function
 
 The following activation functions are the candidates for the mnn model
