@@ -231,7 +231,7 @@ modified norm: mnorm(x) = x \* abs(x / sqrt( sum( square(x), axis=-1, keepdims=T
 
 Some models may perform better with a partial activation instead of full activation, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter as linear as it is just normalize it, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,
 
-## Selective relu gradients
+## Split relu gradients
 
 Solving the dying relu problem
 
@@ -241,7 +241,7 @@ If the relu output > 0:
 
 If the relu output == 0:
 
-  Apply a small fraction of the gradients to the layer weights for example exp(G) or (0.125\*G).
+  Apply a small fraction of the gradients to the layer weights for example exp(intermediate) or (0.125\*intermediate).
 
 Return the normal unmodified relu gradients to the preceding layers or steps to avoid unstablizing them by the fake gradients.
 
