@@ -241,8 +241,8 @@ If the relu output > 0:
 
 If the relu output == 0:
 
-  Apply a small fraction of the gradients to the layer weights for example (0.25 \* G) or exp(G).
-  
+  Apply a small fraction of the gradients to the layer weights for example exp(G) or (0.125 \* G).
+
 Return the normal unmodified relu gradients to the preceding layers or steps to avoid unstablizing them by the fake gradients.
 
 ## Backpropagation through time
