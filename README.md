@@ -235,13 +235,7 @@ Some models may perform better with a partial activation instead of full activat
 
 Solving the dying relu problem
 
-If the relu output > 0:
-
-   Apply the gradients to the layer weights
-
-If the relu output == 0:
-
-  Apply a small fraction of the gradients to the layer weights for example: exp(intermediate) or (0.125\*intermediate).
+(z >= 0, torch.ones_like(z), 0.5 * torch.exp(z))
 
 Return the normal unmodified relu gradients to the preceding layers or steps to avoid unstablizing them by the fake gradients.
 
