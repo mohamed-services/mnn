@@ -393,7 +393,9 @@ Zeroth order is training the model without backpropagation using random gradient
 
 ## Self distillation
 
-Self distillation is running the model for long steps to an outputs then train the model to produce those outputs with lower number of steps.
+Self distillation is running the model for long steps to an outputs then train the model to produce those outputs with lower number of steps.  
+And training the model on the inputs/outputs pairs of an already pretrained subset of its experts and the training happens while deactivating the subset of the experts that was used to output those outputs.  
+in other words training the model to predict the outputs of a subset of is experts without using those experts in the training.
 
 ## Training methods
 
