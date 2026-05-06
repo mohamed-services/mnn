@@ -369,6 +369,20 @@ Also the model is interactive which means you can give it inputs and get outputs
 
 The model doesn't process data token by token instead it works on batchs of tokens in every step and the number of tokens in every step is variable not static.
 
+## Preparing the space
+The pertaining of the mnn network is training the linear layer using the embedding layers and the output layers in an autoencoder mode.
+
+Word 
+Linearlayer0(EmbeddingLayer0)
+Token/s
+OutputLayer1(Linearlayer1)
+Word
+
+The embedding layer of model A and the output layer of model B.
+
+You should train the linear layers to map from any embedding layer of any model to any output layer of any model.
+In other words all the possible layers pairs.
+
 ## Partial training
 
 Training the model with limited backpropagation through time by only tracing the gradients back trhough time to a number of time steps smaller than the total number of the time steps.
