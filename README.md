@@ -51,6 +51,13 @@ and for every token you extract a special vector from it using linear layers and
 
 A positioning network that will be used to send the experts outpots to the correct positions.
 
+## New token generation 
+The query is generated over two or more steps 
+The first step an encoding of the next token position is generated with a blank word or token it's just the new positional encoding and then it's converted into a query that query is runned through the nearest neighbors algorithm to gather the nearby tokens to generate the new query.
+The second step is running the new query in the network to generate a new query or to generate a new value that can be stored in the space.
+It's possible to run the query generation loop multiple times before generating the actual value or the new token, and those multiple runs to ensure better coverage for the tokens space.
+Every time we generate a q we also generate a k and a v but don't save the token to the space until we process a number iterations larger than the log of the current context window to ensure a better coverage of the space and to ensure that the token will be saved in a proper location and to avoid bloating the space with incomplete or missleading tokens.
+
 ## Multidimensionality
 
 If we are using one dimensional neural network like MLP architecture for our model then, if we have an image of size (600, 600, 3) then its flatten context window is approximately 1 million token then we need 1 trillion parameters for a single layer to process this image, also if we are dealing with a text of size 16k words and embedded every word in a vector of size 64 so its flatten context window will be approximately 1 million token then
