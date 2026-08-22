@@ -8,15 +8,45 @@ This is an open source paper so anyone is more than welcome to clone it, improve
 
 ## Introduction
 
-The purpose of this paper is not to prove point/s nor to introduce some new discovery, the purpose of this paper is to help create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is and get similar results to some of the Frontier models.
+The purpose of this paper is not to prove point/s nor to introduce some new discovery, the purpose of this paper is to help create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is, with the aspiration of narrowing the gap toward frontier-scale capabilities over time.
 
 It needs to be able to run continuously for many hours, days, weeks, and months, which is not possible using current architucures like trasnformer.
-
-It shouldn't take a whole data center to train an LLM, it should be possible to train an LLM on a single GPU.
 
 So to start we need first a good architecture.
 
 Also be cautious about any mathematical calculation, code snippet or any unproved claim in this paper, as maybe further verification is needed.
+
+## Architecture requirements
+
+These are the capabilities that the mnn architecture must support, and the rest of this paper is an attempt to satisfy them.
+
+Variable length text inputs where different text samples have different total sizes (M).
+
+The ability to input random token positions from the sample at any given step, for example tokens 1, 6, and 9 in step 1, and tokens 2, 3, and 5 in step 2.
+
+The ability to input variable arbitrary numbers of tokens in parallel at any step, for example 2 tokens, then 5 tokens, then 4 tokens, then 1 token, then 9 tokens.
+
+No requirement to input all the tokens at once or sequentially.
+
+Interactive querying capability to extract or inspect any token position, seen or unseen, at any step, for example querying positions 17, 21, or 8 in step 3 before they are inputted.
+
+The ability to later input a token at a position that was previously queried in an earlier step, for example inputting position 17 or 8 in step 7 after querying it in step 3.
+
+An autoencoder design that continuously builds and maintains a global context of the full text based on all the tokens observed up to the current step.
+
+The ability to decode the full text or any individual tokens from the accumulated global context at any time, equivalent to encoding the entire text in one step and decoding it in the next.
+
+Token override and correction capability, which is the ability to re-input a token at an already filled position, for example inputting a new token at position 1, to update and correct the earlier token at that position.
+
+The ability to input an [EMPTY] token into a position and query it to retrieve a non empty token prediction.
+
+The ability to input a corrupted or noisy token into a position and send a query to extract that exact token position in its uncorrupted clean form.
+
+The context isn't a fixed size data.
+
+The context can grow and can shrink.
+
+Any input process or output process doesn't need to touch all the intermediary data.
 
 ## Modularity
 
@@ -113,7 +143,7 @@ Note that the biases are not accounted for in the above calculations because if 
 
 ## Mixture of experts
 
-The attention mechanism itself isn't needed because you can use a mixture of experts instead of it to route the data between the tokens also you can choose the size of the 2d matrix from n by 2 to n by (n-1) then you can just sum all the data along the second dimension, Also you can use the mixture of experts on a higher dimensions.
+The standard global attention mechanism isn't required for routing because you can use a mixture of experts instead of it to route the data between the tokens, also you can choose the size of the 2d matrix from n by 2 to n by (n-1) then you can just sum all the data along the second dimension, Also you can use the mixture of experts on a higher dimensions. Note that this refers to the standard global softmax attention; the model still relies on nearest-neighbor attention as a core routing primitive (see the Nearest Neighbors section).
 
 Also you can use the attention mechanism on higher dimensions.
 
@@ -153,7 +183,7 @@ Federated machine learning where any one or any company can train their private 
 
 True Mixture of experts architecture
 
-No attention needed As it turns out that attention is not necessary in large language models.
+Standard global softmax attention is not necessary in large language models; nearest-neighbor attention is used instead as the routing mechanism (see the Nearest Neighbors section).
 
 Can we use a central memory for coordinating something like RAG where every agent outputs a small vector
 
@@ -187,7 +217,7 @@ By calculating the distance between the heads coordinates to the current head co
 
 The k nearest neighbors algorithm is imbalanced which means that not all the heads or tokens will be represented equally or the same number of times which means that some tokens can be overrepresented or underrepresented or not represented at all. To fix this issue you can enforce that any token must be represented m number of times to its nearest neighbors even if it isn't in the top k nearest neighbors.
 
-Add nearest neighbors attention to the paper.
+Nearest neighbors attention is a core component of the model.
 The head will generate the query and the key an the value.
 
 The size of the queries and keys is four or eight values.
