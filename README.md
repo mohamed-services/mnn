@@ -10,7 +10,7 @@ This is an open source paper so anyone is more than welcome to clone it, improve
 
 The purpose of this paper is not to prove point/s nor to introduce some new discovery, the purpose of this paper is to help create a full general purpose AI model on your personal computer from scratch and scale it based on your requirements whatever it is, with the aspiration of narrowing the gap toward frontier-scale capabilities over time.
 
-It needs to be able to run continuously for many hours, days, weeks, and months, which is not possible using current architucures like trasnformer.
+It needs to be able to run continuously for many hours, days, weeks, and months, which is hard with current architectures like the transformer, because the context window is bounded and the kv cache grows linearly with every new token.
 
 So to start we need first a good architecture.
 
@@ -52,54 +52,59 @@ Any input process or output process doesn't need to touch all the intermediary d
 
 Modularity means the ability to add or remove heads or experts without destroying the model.
 
-Every expert must get a 3 trainable linear layer as an attachment to convert data from the shared space representation to the expert representation, and to convert the data from the expert representation to the shared space representation.
+Every expert must get 3 trainable linear layers as an attachment, linear_i converts the data from the shared space representation to the expert representation, linear_o converts the data from the expert representation back to the shared space representation, and linear_r is a learned skip connection that carries the input around the expert so the expert can be removed without breaking the path.
 
-Also global linear layers for the generating the queries and keys and for the router network.
+Also global linear layers for generating the queries and the keys and the values and for the router network.
+
 Query = Linear_query(inputs)
 
 Key = Linear_key(inputs)
 
-Value = distance(neareast_neigbours(query, key, inputs))
+Value = Linear_value(inputs)
 
-Note query and key sizes are smaller than the value size
+The nearest neighbours algorithm finds the keys nearest to the query, then the distances to those keys are normalized and inverted into weights, and the values of those neighbours are weighted and summed.
 
-output = linear_o(expert(linear_i(Value))) + linear_r(Value)
+Aggregated = sum(weights(distances(Query, nearest_keys)) \* Value_of_those_neighbours)
 
-This architecture will allow the usage of experts from different open-weights models from different sources without needing to retrain any of those experts and that by freezing the expert weights and just training the linear layers for that expert to be able to communicate with the shared space.
+Note query and key sizes are smaller than the value size, and note that the value is a generated vector not a distance, the distance only produces the weight that the value is multiplied by
 
-The linear layers are intiated with identity matrices and trained during inference.
+output = linear_o(expert(linear_i(Aggregated))) + linear_r(Aggregated)
+
+The goal of this architecture is to allow the usage of experts from different open-weights models from different sources without retraining any of those experts, by freezing the expert weights and training only the linear layers that let that expert communicate with the shared space. This is model stitching, and with linear adapters it is known to work only partially, so expect some quality loss compared to running that expert inside its original model, which is exactly why non linear adapters would be better as noted below.
+
+The linear layers are initiated with identity matrices when the input size and the output size are equal, and when the two sizes are different an identity matrix doesn't exist so initiate them with a truncated or a zero padded identity instead. They are trained at inference time (test time training).
 
 It would be much better to use non linear MLP layers but we will use linear layers in this project.
 
 ## routing
 
-Instead of the router network in the mixture of experts you can make every expert output a signature using global trained input like a bias and local trained linear layers and generate this signaturs only once at the start of the run.
+Instead of the router network in the mixture of experts you can make every expert output a signature using global trained input like a bias and local trained linear layers and generate this signatures only once at the start of the run.
 
-and for every token you extract a special vector from it using linear layers and use nearest neighbors to find the nearest experts signatures, and run this token via the n experts with the nearest signatures and multiply the outputs by the distance.
+and for every token you extract a special vector from it using linear layers and use nearest neighbors to find the nearest experts signatures, and run this token via the n experts with the nearest signatures and multiply the outputs by the inverted normalized distance, so the nearest expert gets the largest weight and not the smallest one, see the Weighting the neighbours part of the Nearest Neighbors section for the formulas.
 
 ## Positioning
 
-A positioning network that will be used to send the experts outpots to the correct positions.
+A positioning network that will be used to send the experts outputs to the correct positions.
 
 ## New token generation 
 The query is generated over two or more steps 
-The first step an encoding of the next token position is generated with a blank word or token it's just the new positional encoding and then it's converted into a query that query is runned through the nearest neighbors algorithm to gather the nearby tokens to generate the new query.
+The first step an encoding of the next token position is generated with a blank word or token it's just the new positional encoding and then it's converted into a query that query is run through the nearest neighbors algorithm to gather the nearby tokens to generate the new query.
 The second step is running the new query in the network to generate a new query or to generate a new value that can be stored in the space.
 It's possible to run the query generation loop multiple times before generating the actual value or the new token, and those multiple runs to ensure better coverage for the tokens space.
-Every time we generate a q we also generate a k and a v but don't save the token to the space until we process a number iterations larger than the log of the current context window to ensure a better coverage of the space and to ensure that the token will be saved in a proper location and to avoid bloating the space with incomplete or missleading tokens.
+Every time we generate a q we also generate a k and a v but don't save the token to the space until we process a number of iterations larger than log_2 of the current context window, which is around 30 iterations for a context window of one billion tokens, to ensure a better coverage of the space and to ensure that the token will be saved in a proper location and to avoid bloating the space with incomplete or misleading tokens.
 
 ## Multidimensionality
 
-If we are using one dimensional neural network like MLP architecture for our model then, if we have an image of size (600, 600, 3) then its flatten context window is approximately 1 million token then we need 1 trillion parameters for a single layer to process this image, also if we are dealing with a text of size 16k words and embedded every word in a vector of size 64 so its flatten context window will be approximately 1 million token then
-we need 1 trillion parameters per layer to process this text, and the truth is most of those 1 trillion parameters doesn’t contribute much and we can convert a lot of those parameters to zeros without affecting the final results much, So the problem of MLP is that it scales quadratically that’s why we are not using
+If we are using one dimensional neural network like MLP architecture for our model then, if we have an image of size (600, 600, 3) then its flattened context window is approximately 1 million token then we need 1 trillion parameters for a single layer to process this image, also if we are dealing with a text of size 16k words and embedded every word in a vector of size 64 so its flattened context window will be approximately 1 million token then
+we need 1 trillion parameters per layer to process this text, and the truth is most of those 1 trillion parameters don’t contribute much and we can convert a lot of those parameters to zeros without affecting the final results much, So the problem of MLP is that it scales quadratically that’s why we are not using
 MLP for tasks of large size like images or text,
 
-The transformer models decrease this problem by reshaping the flat inputs like text into 2d arrays for example, from 1 million to (16384, 64) for that text input, and cut and reshape the image into patches for example from 1 million to (5625, 192), so the computational complexity is reduced from 1 million squared to
-(32768^2, 32^2) and (5625^2, 192^2),
+The transformer models [1] decrease this problem by reshaping the flat inputs like text into 2d arrays for example, from 1 million to (16384, 64) for that text input, and cut and reshape the image into patches for example from 1 million to (5625, 192), so the cost per slice drops from 1 million squared to
+(16384^2, 64^2) and (5625^2, 192^2), but every per slice cost has to be multiplied by the number of the slices on that axis, so the real totals are (64 \* 16384^2) + (16384 \* 64^2) which is around 1.7e10 for the text, and (192 \* 5625^2) + (5625 \* 192^2) which is around 6.3e9 for the image, that is a 58 X reduction for the text and a 159 X reduction for the image against the 1 trillion operations of the flat version, see the True meaning of multidimensionality section,
 The logical conclusion is that we should not stop at just two dimensions as increasing the dimensions reduces the needed computation, so we can reduce the computation by reshaping the inputs from two dimensions to three or more, if we want we can reshape the inputs to a maximum of dimensions equals
 log_2 of its size, so every dimension will be of size two,
 
-The transformer model can process the inputs in multidimensional space, for example if you have input sample of ten thousand words and embedding of size 64 usually you can run the attention mechanism on the first axis of size 10,000 and then you will run the feedforward layer on the second axis of 64, or you can reshape this sample to be (100, 100, 64) and run the attention mechanism on the first axis of size 100 then run the attention mechanism on the second axis of size 100 and then run the feedforward layer on the third axis of size 64, another example if you have an input of size one million words then you can run the attention mechanism on the first axis of size 1,000,000 and run the feedforward layer on the second axis of size 64, or you can reshape it to (100, 100, 100, 64) and then run the attention mechanism of size 100 on the first axis then run it on the second axis of size 100 then run it on the third axis of size 100 then run the feedforward layer on the fourth axis of size 64, I’ll not use the attention mechanism in my model, I’m mentioning it just in case you want to use it,
+The transformer model can process the inputs in multidimensional space, for example if you have input sample of ten thousand words and embedding of size 64 usually you can run the attention mechanism on the first axis of size 10,000 and then you will run the feedforward layer on the second axis of 64, or you can reshape this sample to be (100, 100, 64) and run the attention mechanism on the first axis of size 100 then run the attention mechanism on the second axis of size 100 and then run the feedforward layer on the third axis of size 64, another example if you have an input of size one million words then you can run the attention mechanism on the first axis of size 1,000,000 and run the feedforward layer on the second axis of size 64, or you can reshape it to (100, 100, 100, 64) and then run the attention mechanism of size 100 on the first axis then run it on the second axis of size 100 then run it on the third axis of size 100 then run the feedforward layer on the fourth axis of size 64, I’ll not use the standard global softmax attention mechanism in my model, I’m mentioning it just in case you want to use it, my model uses nearest neighbors attention instead (see the Nearest Neighbors section),
 
 You can implement multidimensional layers using attention layers or convolutional layers, or locally connected layers or feedforward layers or many other options.
 
@@ -107,16 +112,18 @@ You can implement multidimensional layers using attention layers or convolutiona
 
 For attention mechanism from 1d to 2d
 
-1d means 1 million squeared in one step equals 1 trillion oprations
+1d means 1 million squared in one step equals 1 trillion operations
 
-2d means 2 one thousand squared in two steps equals 4 million operations
+2d means reshaping the 1 million tokens to (1000, 1000) and attending along one axis then along the other, and every axis pass runs 1000 independent attentions of size 1000 squared, so 1000 \* (1000^2) = 1 billion operations per axis and 2 billion operations for the two axes
 
-250 X reduction by going one step further
+500 X reduction by going one step further
+
+Note that the per slice cost is 1000^2 but you have to multiply it by the 1000 slices on that axis, dropping that factor is a common mistake and it inflates the reduction by three orders of magnitude
 
 ## Feedforward neural networks
 
-Feedforward layers, is a static or fixed size type of layers where you must decide the input size and the output size of the layer before creating it, which is different from the dynamic range that the attention mechanism gives us, theoretically you can give the transformer model an insanely large input in size and it will compute it and return you the output, but realistically most LLM platforms and transformer models out there have limits to the input size that you can feed to the model and the output size that you can get from the model, right now most of the models have limited context window that’s less than one million words, and some below hundred thousand words,
-and as soon as you decide the maximum size for your model whatever it is, then the attention mechanism isn't needed anymore and you can just use feedforward layer instead of it and zero pad your inputs to the needed size, so instead of using the attention mechanism on the first axis and the feedforward layer on the second axis, you can just use feedforward layer on the first axis and another feedforward layer on the second axis and you will get the same outputs, also you can make the feedforward layer sparse or more dynamic by deciding how many nodes you want to be used for any specific input out of the total number of nodes in that layer based on input size or the task difficulty,
+Feedforward layers, is a static or fixed size type of layers where you must decide the input size and the output size of the layer before creating it, which is different from the dynamic range that the attention mechanism gives us, theoretically you can give the transformer model an insanely large input in size and it will compute it and return you the output, but realistically most LLM platforms and transformer models out there have limits to the input size that you can feed to the model and the output size that you can get from the model, right now most of the models have limited context window that’s less than one million tokens, and some below hundred thousand tokens, (a token is around three quarters of a word for english text, so I’m using tokens as the unit here),
+and as soon as you decide the maximum size for your model whatever it is, then the attention mechanism isn't needed anymore and you can just use feedforward layer instead of it and zero pad your inputs to the needed size, so instead of using the attention mechanism on the first axis and the feedforward layer on the second axis, you can just use feedforward layer on the first axis and another feedforward layer on the second axis and you will get the same kind of global mixing between the tokens, but you will not get the same outputs, because the attention weights are computed from the inputs at run time while the feedforward weights are fixed after training, so this is a substitution and not an equivalence, and that is exactly what MLP-Mixer [2] does, it works but it needs more data and more regularization to reach the same quality, also you can make the feedforward layer sparse or more dynamic by deciding how many nodes you want to be used for any specific input out of the total number of nodes in that layer based on input size or the task difficulty,
 
 ## Multidimensional layers
 
@@ -128,9 +135,9 @@ And those numbers are for non-shared or spatially separate parameters, but if we
 
 ## Irregular shaped inputs and outputs
 
-Like a jagged or ragged data so the global mixing can be applied to some 1D vectors while other 1D vectors are ignored./
+Like a jagged or ragged data so the global mixing can be applied to some 1D vectors while other 1D vectors are ignored.
 So you can run global mixer on the first and third rows but not on all the rows.
-Also you can can run the global mixer on the second and the fourth colmuns but not on all colmuns.
+Also you can run the global mixer on the second and the fourth columns but not on all columns.
 In summary for any n dimensional network you can divide the network to 1D vectors (slicing any dimension) and run the mixer on some vectors while ignoring other vectors.
 
 ## Layer resizing
@@ -143,21 +150,21 @@ Note that the biases are not accounted for in the above calculations because if 
 
 ## Mixture of experts
 
-The standard global attention mechanism isn't required for routing because you can use a mixture of experts instead of it to route the data between the tokens, also you can choose the size of the 2d matrix from n by 2 to n by (n-1) then you can just sum all the data along the second dimension, Also you can use the mixture of experts on a higher dimensions. Note that this refers to the standard global softmax attention; the model still relies on nearest-neighbor attention as a core routing primitive (see the Nearest Neighbors section).
+The standard global softmax attention mechanism isn't required for routing. But note that the mixture of experts on its own is not a replacement for it, because the mixture of experts routes every token to its experts and does not mix data between the tokens, and that is exactly why the mixture of experts transformers keep their attention layers. So in this model the token to token mixing is done by the nearest neighbors attention (see the Nearest Neighbors section), and the mixture of experts sits on top of it to choose which expert processes every token. Also you can choose the size of the 2d matrix from n by 2 to n by (n-1) then you can just sum all the data along the second dimension, Also you can use the mixture of experts on a higher dimensions.
 
 Also you can use the attention mechanism on higher dimensions.
 
-You can also use multi-agents or mult-heads where every agent or every head process a part of the input or a part of the output and they are communicating using addressess so every agent can decide which agents it wants to send data to and which agents it wants to ask data from.
+You can also use multi-agents or multi-heads where every agent or every head process a part of the input or a part of the output and they are communicating using addresses so every agent can decide which agents it wants to send data to and which agents it wants to ask data from.
 
-So agents works like workers in a factory where every worker do his part.
+So agents work like workers in a factory where every worker does their part.
 
-And they are rewarded for distributing work and loads equaly and for being cooperative.
+And they are rewarded for distributing work and loads equally and for being cooperative.
 
 The addressing system:
 
 1D (all agents will be on a line or a circle).
 
-Modular (address 13 for network of size 5 will be 13 mod 5 so thd real address will be 3).
+Modular (address 13 for network of size 5 will be 13 mod 5 so the real address will be 3).
 
 Binary (addresses will be an n bit binary positions for example 32 bit so the agents can address each other efficiently and accurately).
 
@@ -171,41 +178,35 @@ Mixture of experts architecture can be used or should be used.
 
 Some agents can act as an input layers, some agents can act as a hidden layers, and some agents can act as an output layers.
 
-Experts can have different numbers of dimensions for example two, three, or four as soon as tolens size is smaller than input/output maximum size so the expert can reshape the data to its number of dimensions.
+Experts can have different numbers of dimensions for example two, three, or four as long as the tokens size is smaller than input/output maximum size so the expert can reshape the data to its number of dimensions.
 
-The first n bits will be used to address other agents for example the first 1024 bits will be used to address another 32 agents.
+The first n bits will be used to address other agents, for example the first 1024 bits will be used as 32 address slots of 32 bits each so the agent can address another 32 agents.
 
 A subset of the agents can be grouped in a small pool to work on a smaller task.
 
-True mixture of experts architecture.
+True mixture of experts architecture, where the experts are separate modules that can be added or removed, and not just a routed feedforward block inside a fixed layer.
 
 Federated machine learning where any one or any company can train their private agent and integrate it with publicly available agents or experts.
 
-True Mixture of experts architecture
-
-Standard global softmax attention is not necessary in large language models; nearest-neighbor attention is used instead as the routing mechanism (see the Nearest Neighbors section).
-
 Can we use a central memory for coordinating something like RAG where every agent outputs a small vector
 
-And after that nearest neighbors algorithm will be used to to determine the set of inputs that will be used for the next time step.
+And after that nearest neighbors algorithm will be used to determine the set of inputs that will be used for the next time step.
 
-Make every expert output two vectors the first to be its axon central location and the other to be its dendrites central location and this cordinates can be 3d or 4d or 8d cordinates.
+Make every expert output two vectors the first to be its axon central location and the other to be its dendrites central location and these coordinates can be 3d or 4d or 8d coordinates.
 
 Also agents can choose the radius that they want the nearest neighbors to be viewed.
 
 Make the current weights of similar size like 8,8,8,8 and group them in one numpy file to be a single expert.
 
-The system can be asynchronous so every agent can read or write on his own speed for example an agent can run for five steps then read or write and another agen can for eight steps then read or write.
+The system can be asynchronous so every agent can read or write on his own speed for example an agent can run for five steps then read or write and another agent can run for eight steps then read or write.
 
 RAG memories are inherently builtin in the system so a memory can live as an input or output without changing.
 
-The agent can output floating point based cordinates or text based cordinates.
+The agent can output floating point based coordinates or text based coordinates.
 
 agents can be mnn or conv or rnn or transformers.
 
-You can convert convert the distance between the cell and its neighbours into weights where's a lower distance means a higher weight.
-
-w = 1 - current_distance / sum(all distances)
+You can convert the distance between the cell and its neighbours into weights where a lower distance means a higher weight, see the Weighting the neighbours part of the Nearest Neighbors section for the formulas.
 
 Any head can act as input head, hidden head, or output head.
 
@@ -213,24 +214,44 @@ Any head can act as input head, hidden head, or output head.
 
 Using the weighted k nearest neighbors algorithm
 
-By calculating the distance between the heads coordinates to the current head coordinates and normalizing the values between zero and one and subtracting the normalized values from one then multiplying every input by its value or weight. By doing that we teach the networks if it wants to decrease the weight for an input from a head then it should increase the distance or the difference between the current head coordinates and that head coordinates and if it wants to increase the wight for that input then it should decrease the distance or the difference between the coordinates.
+By calculating the distance between the heads coordinates to the current head coordinates and normalizing the values between zero and one and subtracting the normalized values from one then multiplying every input by its value or weight. By doing that we teach the networks if it wants to decrease the weight for an input from a head then it should increase the distance or the difference between the current head coordinates and that head coordinates and if it wants to increase the weight for that input then it should decrease the distance or the difference between the coordinates.
 
 The k nearest neighbors algorithm is imbalanced which means that not all the heads or tokens will be represented equally or the same number of times which means that some tokens can be overrepresented or underrepresented or not represented at all. To fix this issue you can enforce that any token must be represented m number of times to its nearest neighbors even if it isn't in the top k nearest neighbors.
 
 Nearest neighbors attention is a core component of the model.
-The head will generate the query and the key an the value.
+The head will generate the query and the key and the value.
 
-The size of the queries and keys is four or eight values.
+The size of the queries and the keys is much smaller than the size of the values, see the Token size section for the sizes used in this model.
 
 The model will use the k-nearest neighbors approximation to find the nearest keys to the current query.
 
-Distance(abs(query - keys))
+Distance = sum(abs(query - key)) for every selected key, which is the L1 distance, note that abs(query - key) on its own is elementwise and still needs the sum to become a distance
 
 Normalize the distance
 
 Invert the normalized distance
 
 Multiply the inverted normalized distances with the selected values.
+
+### Weighting the neighbours
+
+There are three ways to turn the distances into weights and they don't behave the same, pick one and use it everywhere in the model, in the expert routing and in the nearest neighbors attention, so the training signal stays consistent.
+
+Min max normalization then inversion.
+
+w = 1 - (current_distance - min_distance) / (max_distance - min_distance + epsilon)
+
+This is the simplest one, but the farthest of the k neighbours always ends with a weight of exactly zero so its slot is wasted, and the denominator is zero when all the k distances are equal which is why it needs the epsilon.
+
+Sum normalization.
+
+w = (1 - current_distance / sum(all distances)) / (k - 1)
+
+The raw term (1 - current_distance / sum(all distances)) sums to (k - 1) over the k neighbours and not to one, so it has to be divided by (k - 1) to be normalized. At k equals one that term is zero and the (k - 1) divisor is zero too, so the formula becomes 0/0 and it is undefined.
+
+Inverse distance weighting, this one works for any k including k equals one.
+
+w = (1 / (current_distance + epsilon)) / sum(1 / (all distances + epsilon))
 
 Standard Attention: "I am the query. I will look at all keys, calculate a similarity score for each, and take a weighted average of all values."
 
@@ -240,7 +261,7 @@ Nearest Neighbor Attention: "I am the query. I will find the top-$k$ keys that a
 
 What we need in the mnn is a way to archive past tokens if they aren't needed by any current token and to restore it if it was needed in any future step.
 
-Note all the inputs tokens will have its traces in the hidden tokens.
+Note all the inputs tokens will have their traces in the hidden tokens.
 
 A token will keep or persist its position but it will not be called unless some token or some expert decide to sample from that local location.
 
@@ -254,45 +275,49 @@ The following activation functions are the candidates for the mnn model
 
 relu: pros (simple to compute, sparse, recommended overall) cons (sharp, dying nodes)
 
-leakyrelu: leakyrelu(x) = max(0.75\*x, 0.25\*x)
+leakyrelu: leakyrelu(x) = max(0.75\*x, 0.25\*x). note that this variant has a slope of 0.75 on the positive branch and 0.25 on the negative branch, which is different from the standard leaky relu that keeps a slope of one on the positive branch, it is equivalent to 0.5\*x + 0.25\*abs(x)
 
-hardtanh: hardtanh(x) = clip(x, -1, 1). recomended if you will quantize your model and will use fixed point arithmetic as it more compatible with a Fixed-point arithmetic by making the minimum and the maximum limit of the datatype the same as the activation function for example an 8 bit datatype will have 256 values from approximatly negative one to approximatly positive one and any lower or higher value will be clipped naturally by the datatype
+hardtanh: hardtanh(x) = clip(x, -1, 1). recommended if you will quantize your model and will use fixed point arithmetic as it more compatible with a Fixed-point arithmetic by making the minimum and the maximum limit of the datatype the same as the activation function for example an 8 bit datatype will have 256 values from approximately negative one to approximately positive one and any lower or higher value will be clipped naturally by the datatype
 
 elu: elu(x) = x if x >= 0 else exp(x) - 1
 
-modified elu: melu(x) = x \* exp( min(x,0)). melu is a variant of activation functions like gelu, silu, and mish but it is designed for deeper networks as it have better gradients flow compared to gelu, silu, and mish
+modified elu: melu(x) = x \* exp( min(x,0)). melu is a variant of activation functions like gelu, silu, and mish, its minimum is -1/e which is around -0.368 and it is smooth at zero. The intent is better gradients flow in deeper networks, but that is a hypothesis that still needs benchmarking, its gradient on the negative branch is exp(x)\*(1+x) which decays exponentially for large negative inputs just like gelu and silu do
 
 sort2: sort2(x) = reshape(x, [-1, 2]); sort(x, axis=-1); reshape(x, original_shape)
 
-modified norm: mnorm(x) = x \* abs(x / sqrt( sum( square(x), axis=-1, keepdims=True)))
+modified norm: mnorm(x) = x \* abs(x / sqrt( sum( square(x), axis=-1, keepdims=True))). note that mnorm is not norm preserving, the norm of its output is sqrt(sum(x^4)) / norm(x), so on an already normalized input every component shrinks and repeated application decays towards zero, treat it as a signed squashing step and not as a normalization layer
 
-Some models may perform better with a partial activation instead of full activation, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter as linear as it is just normalize it, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,
+Some models may perform better with a partial activation instead of full activation, for example you can apply the activation function on the first three quarters of the nodes and leave the remaining quarter linear and just normalize it, because the network needs linear and non-linear information to be passed from layer to layer, so by keeping some outputs linear you improve the forward and backward data flow in your model,
 
 ## Split relu gradients
 
-Solving the dying relu problem
+Mitigating the dying relu problem
 
 (z >= 0, torch.ones_like(z), 0.5 * torch.exp(z))
 
-Return the normal unmodified relu gradients to the preceding layers or steps to avoid unstablizing them by the fake gradients.
+Note that this surrogate gradient jumps from 1 to 0.5 at zero so it is discontinuous, and that leaky relu or elu give you a similar effect without needing a surrogate at all.
+
+Return the normal unmodified relu gradients to the preceding layers or steps to avoid destabilizing them by the fake gradients. This doesn't happen by itself through the chain rule, it needs a custom autograd function that computes the weights gradients with the surrogate and the inputs gradients with the true relu gradient.
 
 ## Backpropagation through time
 
-We can use backpropagation through time without storing all the intermediate values in memory by using leaky relu and making sure that the weights matrix is Invertible
+We can use backpropagation through time without storing all the intermediate values in memory by using leaky relu and making sure that the weights matrix is square and invertible
 
-Recommended values for leaky relu alpha are (0.125 , 0.25 , 0.5)
+Note that this conflicts with the Layer resizing section, an axis that you resize with a dense layer has a non square matrix on that axis so it can't be inverted, so per axis you either keep it square and reversible, or you resize it and store its intermediate values normally, you can't have both on the same axis
+
+Recommended values for the leaky relu negative slope alpha are (0.125 , 0.25 , 0.5)
 
 In the backwards pass
 
-We reverse the leaky relu by multiplying the negative outputs with (1/alpha) to get the activation function inputs.
+We reverse the leaky relu by multiplying the negative outputs with (1/alpha) to get the activation function inputs. For the standard leaky relu the positive slope is one so only the negative outputs need to be scaled, but for the two slope variant in the Activation function section you have to scale both branches, the positive outputs by (1/0.75) and the negative outputs by (1/0.25).
 
 Then we matrix multiply the linear layer outputs with the inverse of the weights to get the layer inputs.
 
 And so on step by step back in time.
 
-You need to store the intermediate values every 16 or 32 time steps to accommodate for the accumulated floating point errors.
+You need to store the intermediate values every 16 or 32 time steps to accommodate for the accumulated floating point errors. Note that the reconstruction error is multiplied by the condition number of the weights matrix at every step back, so the safe interval is a function of how well conditioned your weights are and not a fixed number, keep the matrix well conditioned or the reconstruction will diverge. This is the same failure that is reported for reversible recurrent networks [3], and that paper also shows a second limit worth knowing, a perfectly reversible layer cannot forget anything from its state, because forgetting destroys the information that the reversal needs, so a model that must forget has to store a few bits per step to buy that forgetting back.
 
-You can do the same with any monotonic activation function like elu.
+You can do the same with any strictly monotonic activation function like elu.
 
 You can also do the same with the abs activation function but you need to store the sign of the values in every intermediate step.
 
@@ -302,9 +327,11 @@ You can backprop sort2 activation through time by storing the order of every two
 
 You can do the same with abs activation function but the compression rate would be one over thirty two.
 
+Those two rates assume float32 intermediate values, which is 32 bits per value against half a bit per value for sort2 and one bit per value for abs. If you store the intermediates in bfloat16 the rates become one over thirty two and one over sixteen.
+
 ## Connectivity
 
-There're a lot of ways to wire a multidimensional layer for example you can make it fully wired or wire it randomly or wire nodes to their close neighbors using sliding n-dimensional convolution kernels, or using neural architecture search to find the best wiring pattern, you can use any dense or sparse wiring technique that suits your targets, I’ll will wire my model using axis based point of view like using rows and columns etc., so every node will be connected to every other node that shares all the dimensional coordinates or indexes with it but doesn’t share exactly one coordinate or index with it as explained above,
+There're a lot of ways to wire a multidimensional layer for example you can make it fully wired or wire it randomly or wire nodes to their close neighbors using sliding n-dimensional convolution kernels, or using neural architecture search to find the best wiring pattern, you can use any dense or sparse wiring technique that suits your targets, I’ll wire my model using axis based point of view like using rows and columns etc., so every node will be connected to every other node that shares all the dimensional coordinates or indexes with it but doesn’t share exactly one coordinate or index with it as explained above,
 
 ## Network design
 
@@ -314,25 +341,25 @@ you're free to design the network the way you want by choosing how many dimensio
 
 I'll use byte based tokenization for all text modality.
 
+Byte based tokenization produces around four times more tokens than a subword tokenizer for english text, and around five to six times more than a word tokenizer, so the smaller embedding size has to pay for that longer sequence first before it wins anything. This needs to be measured and not assumed.
+
 We will have three types of data:
 
 Binary data.
 
-Discrete data like text and will Use embedding of size 16 for every 256 discrete values.
+Discrete data like text and will use embedding of size 16 for every 256 discrete values.
 
 Signal or continuous data like pixel colors intensities and audio waves amplitudes.
 
-Text data like characters can processed via embedding and reverse embedding layer.
-
-As soon as the embedding size is 256 or below then you're winning performance against the word embedding style.
+Text data like characters can be processed via embedding and reverse embedding layer.
 
 Image data like color channels can be represented via continuous floating point values between negative one and one. And the three colors channels can be represented using three values or more.
 
 You can have multiple embedding layers for the same modality and you can choose between them like mixture of experts.
 
-The input embedding and the network outputs must be the same, in other words you must use the same layer weights for embedding and unembedding.
+The input embedding and the network outputs are tied, in other words the same layer weights are used for embedding and unembedding. This is optional and many models untie them, but I'll tie them to save parameters and to keep the input space and the output space identical.
 
-Every token will be preceded by an 8 bit section for Positional Encoding and for determining the modality like text or image or sound or etc.
+Every token will be preceded by an 8 bit section for determining the modality like text or image or sound or etc., and by a separate positional encoding section. Note that 8 bits only holds 256 values so it can carry the modality tag but it can't carry the position, a context window of one billion tokens needs at least 30 bits per position, so size the positional section to match the context window you are targeting.
 
 ## Token size
 
@@ -340,9 +367,11 @@ We will use 1024 for the value size and 32 for the query and key sizes.
 
 If the size of an output token is larger than 1024 like 4096 then it will be split into 4 tokens using linear transformation.
 
+Open item, the byte embedding in the Tokenization section is of size 16 while the value size here is 1024, so how many bytes get packed into one value token, and which layer does that packing, still needs to be specified.
+
 ## Asynchronous
 
-The system is truly asynchronous which means that the system don't care if token A was inputed before token B or token B was inputed before token A.
+The system is truly asynchronous which means that the system doesn't care if token A was input before token B or token B was input before token A.
 
 ## Next step generation
 
@@ -350,13 +379,15 @@ The number of the hidden tokens in the new step is equal to the number of genera
 
 ## Padding
 
-Transformer models gives flexible context window, but the feedforward models needs fixed context window so we have to pad our inputs to a fixed size so the feedforward layers can process it, you can leave the beginning of your inputs and only pad the end of the inputs, but for me all the inputs will be padded with random number of zeros before it and the inputs will be zero padded after it till the end of the model input size so the position of the input will be random not in the beginning of the context window,
+Transformer models give flexible context window, but the feedforward models needs fixed context window so we have to pad our inputs to a fixed size so the feedforward layers can process it, you can leave the beginning of your inputs and only pad the end of the inputs, but for me all the inputs will be padded with random number of zeros before it and the inputs will be zero padded after it till the end of the model input size so the position of the input will be random not in the beginning of the context window,
 
 ## Context window
 
 I’ll start my model with a context window of one character or one pixel then I’ll start to scale it up and increase the context window,
 
 My final goal will be a context window of one billion tokens,
+
+Note the storage this implies, one billion tokens at a value size of 1024 in float16 is around 2 terabytes for the value store alone, so reaching this goal needs the archiving and the sparsity described in the Long term memory and the Sparsity sections, it is not something that fits in the memory of a personal computer,
 
 Why you may need a model that can handle context window with billions of tokens because you can use the model to handle thousands of prompts at the same time, but you will need a way for the model to share the knowledge without mixing the inputs and that if you want the model to act as a database or a search engine, or you’re dealing with large files like videos,
 
@@ -370,15 +401,15 @@ And this will allow us to continue the training process on general content as mu
 
 You can decide the density or sparsity of the model at inference time like how many neurons you want to be active or used to work in the model out of the total number of neurons in the model,
 
-You can scale up your model after training by reducing sparsity and adding more dimensions or scale it down after training by increasing the sparsity and removing some dimensions,
+You can scale up your model after training by reducing sparsity and adding more dimensions or scale it down after training by increasing the sparsity and removing some dimensions, note that adding dimensions changes the shapes of the weights tensors so it isn't free, and if you widen a layer by duplicating its weights then you must divide the outgoing weights by the number of the copies, otherwise the outputs get scaled up and the widened model will not reproduce the behaviour of the original one,
 
-The brain is a fixed size neural network its size doesn't change based on the inputs size, but the amount of resources dedicated by the brain to a specific problem change based on the difficulty of the problem and that's possible because of the brain sparsity both in space and time,
+The brain keeps a roughly fixed number of neurons in adulthood and its size doesn't change based on the inputs size, although its connectivity does keep changing through synaptogenesis and pruning, but the amount of resources dedicated by the brain to a specific problem change based on the difficulty of the problem and that's possible because of the brain sparsity both in space and time,
 
 ## Runtime
 
-Because we are using fixed network size instead of dynamical size, we can feed the inputs whole sequence in one shot to the model, run the model and get the outputs whole sequence in one shot, or we can feed the inputs word by word to the model and get the outputs word by word like how the transformers work,
+The fixed network size is what forces the padding described in the Padding section, but it also means the model always accepts a full context worth of inputs, so we can feed the inputs whole sequence in one shot to the model, run the model and get the outputs whole sequence in one shot, or we can feed the inputs word by word to the model and get the outputs word by word like how the transformers work,
 
-Also we can implement reasoning and thinking by giving the model various time steps to run by refeeding the model with its own outputs multiple times with backpropagation through time, depending on the length of the inputs and the outputs or the difficulty of the problem, so it can internally reason about the inputs before giving a final output, and the model doesn't need to output its chain of thoughts unless it was explicitly was told to do so,
+Also we can implement reasoning and thinking by giving the model various time steps to run by refeeding the model with its own outputs multiple times, depending on the length of the inputs and the outputs or the difficulty of the problem, so it can internally reason about the inputs before giving a final output, and the model doesn't need to output its chain of thoughts unless it was explicitly was told to do so, at inference this is just the refeeding loop running with no gradients, backpropagation through time is what trains that loop, it doesn't run at inference,
 
 ## Runtime learning
 
@@ -392,27 +423,29 @@ Strengthen Rules: If inputs and outputs are in sync (both active or both inactiv
 
 Weaken Rules: If inputs and outputs are out of sync (one active, one inactive), decrease the weight.
 
+Note that counting both inactive as in sync makes this a covariance or correlation rule on bipolar values, and not the classic Hebbian rule, because in the classic Hebbian rule the product of the pre and the post activity is zero whenever either of them is inactive.
+
 Ensuring that Afast​ decays over time to prevent runaway values, and combines with Wslow​ for the final forward pass.
 
 ## Recursion
 
-The model is recursive neural network not recurrent neural network.
+The model is recursive in the sense that it feeds its own outputs back into itself. And because those refeeds happen over time steps and are trained with backpropagation through time, the model is recurrent too. What it is not is a tree structured recursive network in the classical sense.
 
 ## Read & Write
 
-The model can read the inputs in multiple time steps like batchs or can read all the inputs at once, also the model can write the outputs as batchs or all at once.
+The model can read the inputs in multiple time steps like batches or can read all the inputs at once, also the model can write the outputs as batches or all at once.
 
 Also the model is interactive which means you can give it inputs and get outputs from it then give it more inputs.
 
-The model doesn't process data token by token instead it works on batchs of tokens in every step and the number of tokens in every step is variable not static.
+The model doesn't process data token by token instead it works on batches of tokens in every step and the number of tokens in every step is variable not static.
 
 ## Preparing the space
-The pertaining of the mnn network is training the linear layer using the embedding layers and the output layers in an autoencoder mode.
+The pretraining of the mnn network is training the linear layer using the embedding layers and the output layers in an autoencoder mode.
 
 Word 
-Linearlayer0(EmbeddingLayer0)
+Linear_layer_0(Embedding_layer_0)
 Token/s
-OutputLayer1(Linearlayer1)
+Output_layer_1(Linear_layer_1)
 Word
 
 The embedding layer of model A and the output layer of model B.
@@ -422,23 +455,27 @@ In other words all the possible layers pairs.
 
 ## Partial training
 
-Training the model with limited backpropagation through time by only tracing the gradients back trhough time to a number of time steps smaller than the total number of the time steps.
+Training the model with limited backpropagation through time by only tracing the gradients back through time to a number of time steps smaller than the total number of the time steps.
 
 ## Zeroth and first order training
 
-Zeroth order is training the model without backpropagation using random gradients.
+Zeroth order is training the model without backpropagation by estimating the gradients from the forward passes only, you perturb the weights along random directions and use the change in the loss as a finite difference estimate of the gradient along those directions, like SPSA and the evolution strategies methods do. The directions are random, the gradients are estimated not random.
+
+First order is the ordinary training where the exact gradients are computed by backpropagation through the chain rule.
 
 ## Self distillation
 
 Self distillation is running the model for long steps to an outputs then train the model to produce those outputs with lower number of steps.  
 And training the model on the inputs/outputs pairs of an already pretrained subset of its experts and the training happens while deactivating the subset of the experts that was used to output those outputs.  
-in other words training the model to predict the outputs of a subset of is experts without using those experts in the training.
+in other words training the model to predict the outputs of a subset of its experts without using those experts in the training.
 
 ## Training methods
 
 An autoencoder style training will be used.
 
 Which means no next word prediction instead the model will learn to compress the input and recover missing data or denoise the data that was noised from the other samples.
+
+A denoising objective on its own doesn't give you a generator, so what bridges the two here is that an empty position is just another kind of missing data, generating a token is querying an [EMPTY] position and letting the denoiser fill it, see the Architecture requirements and the New token generation sections.
 
 And training methods will be.
 
@@ -452,7 +489,7 @@ Many inputs to many outputs.
 
 ## Training data
 
-No human labels will be used in the pretraining of the model, only raw unsupervised learning and reinforcement learning.
+No human labels will be used in the pretraining of the model, only raw unsupervised learning and reinforcement learning with programmatic rewards. Note that any reward that is written or chosen by a human is itself a form of human supervision, so the rewards have to be computable from the data itself for the pretraining to stay label free.
 
 Supervised learning will be only used in the prompt fine-tuning.
 
@@ -460,15 +497,15 @@ Only open source data will be used in the model training
 
 ## Video processing
 
-Vedio proccessing using multidimensional attention and i frames and epsoides
+Video processing using multidimensional attention and i frames and episodes
 
-## Lossy weights compresion
+## Lossy weights compression
 
 Algorithms like DCT, quantization and run length encoding can be used to compress the model weights.
 
 ## General intelligence score
 
-The model should be tested againest data that it can't reach via interpolation or extrapolation.
+The model should be tested against data that is far from its training distribution, held out by time or by domain or by construction, so that a correct answer can't be explained by interpolating or extrapolating the training data. Note that this is a matter of degree and not a clean binary, so state how the test set was separated instead of claiming that it is unreachable.
 
 ## Implementation
 
@@ -476,13 +513,13 @@ I'll create two models:
 
 Gradient Descent model and it will be mostly open source and for production purposes, and its implementation will be in
 
-[Model Directory](/model)
+[Model Directory](/src)
 
 Experimental model and it will be mostly closed source and for experimentation purposes.
 
 Multidimensional layer implementation
 
-[Layer Implementation](/layer.py)
+[Layer Implementation](/src/layer.py)
 
 you are not bounded by this implementation, you can implement the multidimensional layer however you want based on your requirements, and decide what parameters to be shared and what to stay separate,
 
@@ -492,7 +529,7 @@ you can stack multiple multidimensional layers for a deeper network
 
 you can feed the outputs of the multidimensional layer to itself multiple times before passing the outputs to the next layer
 
-this implementation is in TensorFlow, but you can convert it to PyTorch very easily
+this implementation supports TensorFlow, PyTorch and JAX backends, you pick the backend when you build the layer
 
 In this implementation every node is connected to itself multiple times which is inefficient in the parallel mode
 
@@ -517,3 +554,5 @@ You can email me on my personal email <mohamed.sourcing@gmail.com>
 [1] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin. Attention Is All You Need <https://arxiv.org/abs/1706.03762>
 
 [2] Ilya Tolstikhin, Neil Houlsby, Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, Thomas Unterthiner, Jessica Yung, Andreas Steiner, Daniel Keysers, Jakob Uszkoreit, Mario Lucic, Alexey Dosovitskiy. MLP-Mixer: An all-MLP Architecture for Vision <https://arxiv.org/abs/2105.01601>
+
+[3] Matthew MacKay, Paul Vicol, Jimmy Ba, Roger Grosse. Reversible Recurrent Neural Networks <https://arxiv.org/abs/1810.10999>
